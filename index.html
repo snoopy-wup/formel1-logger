@@ -1,0 +1,1638 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#17382a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Formel1-LOGGER">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>Formel1-LOGGER</title>
+<style>
+:root{--c1:#2a78d6;--c2:#eb6834;--c3:#1baf7a;--c4:#eda100;--c5:#e87ba4;--c6:#008300;--c7:#6250d6;--c8:#e34948;--pl1:#184f95;--pl2:#2a78d6;--pl3:#6da7ec;--pl4:#b7d3f6;--grid:#e1e0d9;--zebra:#e6e1d2;--sec:#d3dccf;--bg:#f4f1ea;--card:#fff;--ink:#1d2a24;--mute:#6b766f;--line:#ddd8cb;--accent:#1f6b4a;--accent-ink:#fff;--bad:#b3322b;--good:#1f6b4a;--warn:#b7791f;--chip:#ece8dc}
+@media (prefers-color-scheme:dark){:root{--c1:#3987e5;--c2:#d95926;--c3:#199e70;--c4:#c98500;--c5:#d55181;--c6:#008300;--c7:#9085e9;--c8:#e66767;--pl1:#b7d3f6;--pl2:#6da7ec;--pl3:#2a78d6;--pl4:#184f95;--grid:#2c2c2a;--zebra:#26392f;--sec:#34513f;--bg:#14201a;--card:#1d2d25;--ink:#e8efe9;--mute:#9aaba1;--line:#2f4439;--accent:#3fae7c;--accent-ink:#062014;--bad:#ef7b72;--good:#5fd09b;--warn:#e3b04f;--chip:#27392f}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,Segoe UI,sans-serif;padding-bottom:90px}
+.wrap{max-width:980px;margin:0 auto;padding:0 16px}
+h1{font-size:20px;margin:16px 0}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+.btn{background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;padding:10px 16px;font-weight:600}
+.btn.sec{background:var(--chip);color:var(--ink)}
+.btn:disabled{background:#c3c6c1;color:#6c6f6a;cursor:not-allowed;opacity:1} /* grau = nicht bedienbar */
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]) .btn:disabled{background:#4a4d4a;color:#9a9d99}}
+.btn.bad{background:var(--bad);color:#fff}
+input[type=text],input[type=number],select{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%}
+label{display:block;font-size:13px;color:var(--mute);margin:10px 0 4px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:12px 0}
+.top{position:sticky;top:0;background:var(--bg);padding:10px 0;z-index:5;border-bottom:1px solid var(--line)}
+.pl{display:grid;gap:8px}
+.p{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 6px;text-align:center;min-width:0}
+.p.deal{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+.p .nm{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.p .tot{font-size:28px;font-weight:800;line-height:1.1}
+.p .tag{font-size:11px;color:var(--mute);min-height:15px}
+.banner{border-radius:10px;padding:8px 12px;margin:10px 0;font-size:14px;background:var(--chip)}
+.banner.bock{border-left:5px solid var(--warn)}
+.banner.mal{border-left:5px solid var(--accent)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+td.num,th.num{text-align:right;white-space:nowrap}
+#app table th,#app table td{border-left:1px solid var(--line)}
+#app table th:first-child,#app table td:first-child{border-left:0}
+tr.row{cursor:pointer}
+.lost{color:var(--bad);font-weight:700}
+.won{color:var(--good)}
+.chip{display:inline-block;background:var(--chip);border-radius:6px;padding:0 6px;font-size:12px;margin-right:3px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:8px 12px}
+.seg button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.seg button:disabled{opacity:.35;cursor:not-allowed}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fab{position:fixed;right:16px;bottom:16px;box-shadow:0 4px 14px #0004;padding:14px 20px;font-size:17px}
+.modal{position:fixed;inset:0;background:#0007;display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.sheet{background:var(--bg);width:100%;max-width:620px;max-height:94vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px}
+@media(min-width:700px){.modal{align-items:center}.sheet{border-radius:18px}}
+.prev{background:var(--chip);border-radius:10px;padding:10px 12px;margin:12px 0;font-weight:600}
+.chk{display:flex;align-items:center;gap:8px;margin:6px 0;color:var(--ink);font-size:15px}
+.chk input{width:20px;height:20px}
+.muted{color:var(--mute);font-size:13px}
+.scroll{overflow-x:auto}
+.pc{text-align:center}
+#app tr.cyc td{border-bottom:4px solid var(--ink)}
+.sheet.wide{max-width:980px}
+/* Fenster offen: Seite dahinter nicht mitscrollen (Wischen in Tabelle/Fenster darf nie die Hintergrundseite bewegen) */
+body.lock{overflow:hidden}
+.modal,.sheet,.statwrap{overscroll-behavior:contain}
+.btn.sm{padding:4px 10px;font-size:13px}
+.nb{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--chip);color:var(--ink);font-size:20px;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0;flex:none}
+.nb.x{margin-left:auto}
+.navbar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;position:sticky;top:-16px;z-index:3;background:var(--bg);margin:-16px -16px 8px;padding:8px 16px}
+.podi{display:block;margin:0 auto 2px}
+.btnbar .btn{padding:9px 10px;font-size:14px;min-height:38px;white-space:nowrap}
+.btnbar{position:sticky;bottom:-16px;z-index:3;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;background:var(--bg);border-top:1px solid var(--line);margin:14px 0 -16px;padding:10px 0}
+.statwrap.ov tbody tr.pin td{position:sticky;z-index:2}
+.statwrap.ov tbody tr.pin td:first-child{z-index:3}
+.statwrap.ov tbody tr.pin1 td{top:var(--hdH,76px)}
+.statwrap.ov tbody tr.pin2 td{top:calc(var(--hdH,76px) + var(--p1H,56px));box-shadow:0 2px 0 var(--accent)}
+.statwrap.ov tbody tr.pin1:last-of-type td{box-shadow:0 2px 0 var(--accent)}
+.navbar.pg{position:static;margin:0 0 8px;padding:0;background:none}
+.nbio{display:flex;gap:8px}
+.nbl{display:flex;gap:8px;justify-self:start}
+.navbar>.nb:last-child{justify-self:end}
+.rk{font-size:12px;border-radius:5px;padding:0 5px;background:var(--chip)}
+.rk.r1{background:#e8b923;color:#2a1a00}
+.sheet table th.pc,.sheet table td.pc{min-width:70px}
+tr.sec th{background:var(--sec);text-align:left;font-size:13px}
+.sheet table th,.sheet table td{border-left:1px solid var(--line)}
+.sheet table th:first-child,.sheet table td:first-child{border-left:0}
+.statwrap{overflow:auto;max-height:60vh;border:1px solid var(--line);border-radius:8px;margin-top:10px}
+.statwrap table{border-collapse:separate;border-spacing:0;min-width:100%}
+.statwrap th,.statwrap td{border-bottom:1px solid var(--line)}
+.statwrap thead th{position:sticky;top:0;z-index:3;background:var(--card)}
+.statwrap td:first-child,.statwrap th:first-child{position:sticky;left:0;z-index:2;min-width:170px;text-align:left}
+.statwrap thead th:first-child{z-index:4}
+.statwrap tbody td{background:var(--card)}
+.statwrap tbody tr.z td{background:var(--zebra)}
+.statwrap tr.sec th{position:sticky;left:0}
+.tot2{font-size:18px}
+tr.h1 th,tr.h2 th{position:sticky;background:var(--card);z-index:4}
+tr.h1 th{top:var(--topH,0px)}
+tr.h2 th{top:calc(var(--topH,0px) + var(--h1H,0px));font-size:20px;font-weight:800;border-bottom:2px solid var(--accent)}
+tr.h2 th:nth-child(2){font-size:13px;font-weight:600;color:var(--mute)}
+tr.h1 th.deal{box-shadow:inset 0 -3px 0 var(--accent)}
+tr.h1 th.pc.rk{padding-top:20px!important}
+.rnk{position:absolute;top:2px;left:3px;min-width:18px;height:18px;line-height:18px;border-radius:9px;background:var(--accent);color:var(--accent-ink);font-size:11px;font-weight:800;text-align:center;padding:0 4px;z-index:1}
+th .nm{font-weight:700}
+th .tag{font-size:11px;font-weight:400;color:var(--mute)}
+th.gone{opacity:.7}
+.top .banner{margin:6px 0 0}
+.banner.orange{background:#f6ad3c;color:#2a1a00;border-left:0}
+.p.gone{opacity:.65;background:var(--chip)}
+.gls{display:flex;justify-content:center;gap:4px;margin-bottom:3px}
+.gl{font-size:12px;font-weight:800;width:20px;height:20px;line-height:20px;border-radius:5px;color:#fff}
+.opn{color:#b7791f;font-weight:700}
+.hit{padding:8px 10px;border:1px solid var(--line);border-radius:8px;margin:6px 0;cursor:pointer;background:var(--card);font-size:14px}
+.hit:hover{border-color:var(--accent)}
+.help h3{margin:16px 0 4px;font-size:16px}
+.help h4.hsub{margin:14px 0 4px;font-size:15px;border-top:1px solid var(--line);padding-top:8px}
+.htoc{display:flex;flex-direction:column;gap:2px;margin:8px 0;padding:8px 12px;background:var(--chip);border-radius:10px}.htoc a{color:var(--ink);padding:3px 0;font-weight:600;text-decoration:none}
+.help ul{padding-left:20px;margin:6px 0}.help li{margin:4px 0}
+.help table{font-size:14px;margin:6px 0}
+.sheet h3{margin:14px 0 4px;font-size:15px}
+.toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;z-index:50;max-width:90vw;box-shadow:0 4px 14px #0005}
+.mlabel{font-size:9px;font-weight:800;letter-spacing:.03em;color:var(--mute);align-self:center}
+.gls{flex-wrap:wrap;align-items:center}
+@media(min-width:640px){.gls{flex-wrap:nowrap}#app tr.h1 th.pc{min-width:132px}}
+.gl.green{background:#1f9d55}
+.gl.red{background-color:#c0392b;color:#ffd0cb;background-image:linear-gradient(to top right,transparent calc(50% - 1.5px),#fff calc(50% - 1.5px),#fff calc(50% + 1.5px),transparent calc(50% + 1.5px)),linear-gradient(to bottom right,transparent calc(50% - 1.5px),#fff calc(50% - 1.5px),#fff calc(50% + 1.5px),transparent calc(50% + 1.5px))}
+.statwrap.ov thead tr:first-child th{min-height:38px;white-space:nowrap}
+.statwrap.ov thead tr:nth-child(2) th{top:var(--r1H,38px)}
+/* Diagramme der Statistik */
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:12px;margin-top:10px}
+.chartcard{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;min-width:0}
+.chartcard h3{margin:0 0 2px;font-size:15px}
+.chartcard .muted{margin:0 0 6px}
+.chartcard.wide{grid-column:1/-1}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;margin-top:6px}
+.legend span.it{display:inline-flex;align-items:center;gap:6px}
+.sw{width:11px;height:11px;border-radius:3px;display:inline-block;flex:none}
+.donut{display:block;width:100%;max-width:230px;margin:0 auto}
+.donut path{stroke:var(--card);stroke-width:2}
+.donut path:hover,.hb i:hover{opacity:.8}
+.donut text{fill:var(--ink);font-family:inherit}
+.hrow{display:grid;grid-template-columns:78px 1fr;gap:8px;align-items:center;margin:7px 0;font-size:13px}
+.hrow .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hb{display:flex;gap:2px;height:20px;background:transparent}
+.hb i{display:block;min-width:0;border-radius:0 4px 4px 0;height:100%}
+.hb i:first-child{border-radius:0 4px 4px 0}
+.hv{font-size:12px;color:var(--mute);margin-top:1px}
+.linechart{display:block;width:100%;height:auto}
+.linechart text{fill:var(--mute);font-size:11px;font-family:inherit}
+.dsk{display:contents}
+.menu-btn,.rn{display:none}
+.selrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px}
+.selrow select{margin-bottom:8px}
+.menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.menu-item{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 12px;min-height:56px;font-size:16px;font-weight:600;text-align:left}
+.menu-item span{font-size:22px}
+body{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
+.sheet{padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+.appt{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:8px 0}.appt.past{opacity:.75}.appt .at{font-size:17px;font-weight:700;margin:2px 0}.appt .arow{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.appt .arow .btn{padding:8px 10px}
+.chip.hol{background:#f3d3d0;color:#8a1f18}
+textarea,input[type=time]{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%;font:inherit}
+.datelab{align-self:center;font-weight:600}
+.cal{margin:8px 0;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px}.calnav{display:flex;align-items:center;justify-content:space-between;gap:4px;margin-bottom:6px}.calnav .btn{padding:4px 12px;min-width:40px}
+.calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}.calgrid .cw{text-align:center;font-size:12px;color:var(--mute);font-weight:700}.calgrid .cw.sat{color:var(--c1)}.calgrid .cw.sun{color:var(--bad)}
+.cd{aspect-ratio:1/1;min-height:36px;border:1px solid transparent;border-radius:8px;background:var(--chip);color:var(--ink);font-weight:600;position:relative;padding:0}.cd.empty{background:none}
+.cd.sat{background:#cfe0f7;color:#12457f}.cd.sun,.cd.hol{background:#f3c9c5;color:#8a1f18}.cd.hol.reg{background:#f8e0dd}
+.cd.today{border-color:var(--ink)}.cd.sel{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}.cd.has::after{content:'';position:absolute;bottom:3px;left:50%;margin-left:-3px;width:6px;height:6px;border-radius:50%;background:var(--warn)}
+.callegend{display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--mute);margin-top:6px}.callegend .btn{padding:4px 10px;margin-left:auto}.lg{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:4px;vertical-align:-1px}.lg.sat{background:#cfe0f7}.lg.sun,.lg.hol{background:#f3c9c5}.lg.has{background:var(--warn);border-radius:50%}
+.calhol{margin-top:4px}.whobox{display:flex;flex-wrap:wrap;gap:2px 14px}
+.logrow{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--c1);border-radius:8px;padding:8px 10px;margin:8px 0;font-size:14px}.logrow.verschoben{border-left-color:var(--c2)}.logrow.gelöscht{border-left-color:var(--bad)}.logrow.geändert{border-left-color:var(--c4)}.logrow .chg{margin-top:2px}
+.wapre{white-space:pre-wrap;background:var(--chip);padding:10px;border-radius:8px;font-family:inherit;font-size:13px;line-height:1.4;margin:4px 0}
+.nextappt{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:0 0 10px;cursor:pointer;font-size:14px}
+@media (prefers-color-scheme:dark){.chip.hol{background:#5a2724;color:#ffd5d1}.cd.sat{background:#27425f;color:#bcd8fb}.cd.sun,.cd.hol{background:#5d2c29;color:#ffd5d1}.cd.hol.reg{background:#442523}}
+.home{max-width:520px;margin:0 auto;padding:8px 0 24px}.homelogo{display:flex;justify-content:center;cursor:pointer;margin:6px 0 8px}.homelogo svg{width:min(240px,60vw,36vh);height:auto}.hometitle{text-align:center;margin:0 0 2px}.homemain{margin-bottom:10px}.homemain .menu-item{width:100%;justify-content:center;font-size:18px;min-height:64px}.menu-item.prim{background:var(--accent,#17382a);color:#fff;border-color:transparent}.homebar{margin-top:12px}
+.mlabel{font-size:10px}
+/* Handy und kleine Tablets: Menü statt vieler Knöpfe, Spielzeilen als Karten mit Zahlenreihe */
+@media(max-width:900px){
+  #app tr.h1 th.pc{min-width:0!important}
+  .wrap{padding:0 10px}
+  .dsk{display:none}
+  .tlogo{display:none!important}
+  .menu-btn{display:inline-block}
+  .top{position:static;padding:6px 0} /* am Handy scrollt die Leiste mit, fest bleiben nur Namen und Summen */
+  .top .banner{font-size:13px;padding:6px 10px;margin:4px 0 0}
+  .card{padding:6px;margin:8px 0}
+  table.gt,table.gt thead,table.gt tbody{display:block}
+  table.gt{font-size:13px}
+  table.gt thead{position:sticky;top:0;z-index:4;background:var(--card)}
+  table.gt tr{display:grid;grid-template-columns:repeat(var(--np),minmax(0,1fr)) 68px}
+  table.gt tr.h1 th:nth-child(-n+2),table.gt tr.h2 th:nth-child(-n+2){display:none}
+  table.gt tr.h1 th,table.gt tr.h2 th{position:static;padding:4px 2px;overflow:hidden}
+  table.gt tr.h1 th.pc{position:relative;top:auto}
+  .gls{gap:2px}.gl{width:17px;height:17px;line-height:17px;font-size:10px;border-radius:4px}.mlabel{flex-basis:100%;text-align:center} /* G R F in einer Zeile */
+  table.gt tr.h2 th{font-size:17px}
+  table.gt tr.h2 th:last-child{font-size:13px}
+  table.gt tr.h1 th.deal{box-shadow:inset 0 -3px 0 var(--accent)}
+  table.gt th .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  table.gt td,table.gt th{border-left:1px solid var(--line)}
+  table.gt tr.row td:nth-child(1){display:none}
+  table.gt tr.row td:nth-child(2){grid-column:1/-1;border-left:0;border-bottom:0;padding:8px 6px 4px}
+  table.gt tr.row td:nth-child(n+3){padding:4px 2px;text-align:center;font-size:15px;border-bottom:1px solid var(--line);border-top:1px dashed var(--line)}
+  table.gt tr.row td:nth-child(3){border-left:0}
+  table.gt tr.row{border-bottom:0}
+  #app tr.cyc td:nth-child(n+3){border-bottom:4px solid var(--ink)}
+  #app tr.cyc td:nth-child(2){border-bottom:0}
+  .rn{display:inline;font-weight:800;color:var(--mute)}
+  .statwrap table{font-size:12.5px}
+  .statwrap th,.statwrap td{padding:6px 3px}
+  .statwrap td:first-child,.statwrap th:first-child{min-width:92px;padding-left:6px}
+  .sheet table th.pc,.sheet table td.pc{min-width:50px}
+  .fab{right:12px;bottom:12px;padding:12px 16px;font-size:16px}
+  .seg button{padding:10px 12px;min-height:40px}
+  .btn{min-height:40px}
+  .btn.sm{min-height:34px}
+  .chk input{width:24px;height:24px}
+  input[type=text],input[type=number],input[type=time],select{padding:10px;min-height:42px;font-size:16px}textarea{font-size:16px}
+  .statwrap{max-height:62vh}
+}
+/* niedrige Bildschirme (Querformat am Handy): Kopf nicht festkleben, nur Namen und Summen */
+/* Breite Fenster (Windows/PC): Spielseite mit großer Kopfzeile (Name + Platzierung), großen Summen, großer Info-Leiste und großem laufenden/letzten Spiel, fest stehend.
+   Die Größen richten sich nach der Fensterhöhe (hoch ≥ 1100 px, mittel 700–1099 px, niedrig < 700 px), damit im Browser-Tab genug Platz zum Scrollen bleibt. */
+@media(min-width:901px){
+  #app table.gt{border-collapse:separate;border-spacing:0}
+  .top .banner{font-size:22px;font-weight:700;padding:12px 18px;margin:8px 0 0;border-radius:12px}
+  #app tr.h1 th.pc .nm{font-size:30px;font-weight:800;line-height:1.2}
+  #app tr.h1 th.pc .tag{font-size:15px}
+  #app tr.h1 th.pc.rk{padding-top:36px!important}
+  .rnk{min-width:32px;height:32px;line-height:32px;border-radius:16px;font-size:19px;top:4px;left:8px}
+  .gl{width:26px;height:26px;line-height:26px;font-size:15px}
+  .mlabel{font-size:12px}
+  #app tr.h2 th{font-size:46px;line-height:1.1;padding-top:6px;padding-bottom:6px}
+  #app tr.h2 th:nth-child(2){font-size:16px}
+  #app tr.h2 th:last-child{font-size:24px}
+  #app tr.big td{font-size:21px;background:var(--card);position:sticky;z-index:2}
+  #app tr.big td.pc{font-size:38px;font-weight:800}
+  #app tr.big td.num{font-size:34px}
+  #app tr.big .chip{font-size:15px}
+  #app tr.big td:nth-child(2) .rn{font-size:24px}
+  #app tr.big1 td{top:calc(var(--topH,0px) + var(--h1H,0px) + var(--h2H,0px))}
+  #app tr.big2 td{top:calc(var(--topH,0px) + var(--h1H,0px) + var(--h2H,0px) + var(--p1H,0px))}
+  #app tr.big1 td{box-shadow:0 -4px 0 var(--card)} /* deckt den schmalen Spalt unter den Summen ab */
+  #app tr.bigLast td{box-shadow:0 4px 0 var(--accent)}
+  #app tr.big1.bigLast td{box-shadow:0 -4px 0 var(--card),0 4px 0 var(--accent)}
+  /* Zu wenig Platz für die festen Teile: nichts festkleben (per Skript gesetzt) */
+  body.pinOff #app tr.big td{position:static!important;box-shadow:none!important}
+  body.headOff #app tr.h1 th,body.headOff #app tr.h2 th{position:static!important}
+}
+/* mittlere Fensterhöhe (Browser-Tab, EXE-Fenster, Full-HD): kleinere Schrift, obere Leiste scrollt mit */
+@media(min-width:901px) and (max-height:1099px){
+  .top{position:static}
+  .top .banner{font-size:18px;padding:9px 14px}
+  #app tr.h1 th.pc .nm{font-size:25px}
+  #app tr.h1 th.pc.rk{padding-top:30px!important}
+  .rnk{min-width:26px;height:26px;line-height:26px;border-radius:13px;font-size:16px}
+  .gl{width:22px;height:22px;line-height:22px;font-size:13px}
+  #app tr.h2 th{font-size:34px}
+  #app tr.h2 th:last-child{font-size:20px}
+  #app tr.big td{font-size:17px}
+  #app tr.big td.pc{font-size:28px}
+  #app tr.big td.num{font-size:26px}
+  #app tr.big td:nth-child(2) .rn{font-size:19px}
+  #app tr.big td:nth-child(2) .muted{font-size:13px}
+}
+/* niedrige Fenster: sehr kompakt, Nebenzeilen der großen Zeilen entfallen */
+@media(min-width:901px) and (max-height:699px){
+  .top .banner{font-size:16px;padding:7px 12px}
+  #app tr.h1 th.pc .nm{font-size:21px}
+  #app tr.h1 th.pc .tag{font-size:12px}
+  #app tr.h1 th.pc.rk{padding-top:26px!important}
+  .rnk{min-width:22px;height:22px;line-height:22px;border-radius:11px;font-size:14px}
+  .gl{width:18px;height:18px;line-height:18px;font-size:11px}
+  #app tr.h2 th{font-size:28px;padding-top:3px;padding-bottom:3px}
+  #app tr.h2 th:last-child{font-size:17px}
+  #app tr.big td{font-size:15px}
+  #app tr.big td.pc{font-size:22px}
+  #app tr.big td.num{font-size:21px}
+  #app tr.big td:nth-child(2) .muted,#app tr.big td:nth-child(2) .chip{display:none} /* nur Nebenzeilen der Beschreibung, nicht die Zellen mit „-“ */
+}
+@media(max-height:520px){
+  .top{position:static}
+  table.gt thead,tr.h1 th,tr.h2 th{top:0!important}
+  tr.h2 th{top:var(--h1H,0px)!important}
+  table.gt thead{top:0!important}
+  th .tag{display:none}
+  .statwrap.ov tbody tr.pin td{position:static}
+  .statwrap.ov tbody tr.pin td:first-child{position:sticky}
+  .sheet{max-height:96vh;padding:10px 14px}
+  .sheet h1{margin:4px 0 8px;font-size:18px}
+  input[type=text],input[type=number],select{min-height:38px;padding:6px 10px}
+  .statwrap{max-height:70vh}
+  .fab{padding:10px 14px}
+  body{padding-bottom:70px}
+}
+/* Formel 1: Rennmaske, Ränge, Matrix */
+.rrow{display:grid;grid-template-columns:minmax(56px,.9fr) 62px 1.7fr 28px;gap:6px;align-items:center;margin:6px 0}
+.rrow.h{font-size:12px;color:var(--mute);font-weight:700;margin-bottom:0}
+.rrow .rn2{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rrow select{padding:8px 4px;min-height:42px;font-size:15px}
+.rrow .rpt{text-align:right;font-weight:800;font-size:18px}
+.rk.r2{background:#d5d9de;color:#222}.rk.r3{background:#e6c7a6;color:#2a1a00}
+.rk.rd{background:#f3d3d0;color:#8a1f18}.rk.rg{background:var(--chip);color:var(--mute)}
+table.mx td,table.mx th{padding:6px 4px;text-align:center;white-space:nowrap}
+table.mx td:first-child,table.mx th:first-child{text-align:left}
+.statwrap.mxw td:first-child,.statwrap.mxw th:first-child{min-width:86px}
+.whobox{margin:4px 0}
+@media(max-width:900px){table.gt td .tag{font-size:10px;line-height:1.15;white-space:nowrap;overflow:hidden}table.gt tr.row td:nth-child(n+3){font-size:14px}}
+@media(max-width:900px){table.gt tr{grid-template-columns:repeat(var(--np),minmax(0,1fr)) 46px}table.gt th,table.gt td{min-width:0}}
+@media(max-height:520px){.rrow{margin:3px 0}.rrow select{min-height:34px;padding:3px 6px}.btnbar{padding:6px 0;margin-top:6px}.btnbar .btn{min-height:34px;padding:5px 10px}.sheet .navbar{margin-bottom:0}}
+table.gt.dense th .nm{font-size:13px}table.gt.dense th .tag{font-size:9px;line-height:1.1}table.gt.dense tr.h2 th{font-size:15px}
+@media (prefers-color-scheme:dark){.rk.r2{background:#59616a;color:#fff}.rk.r3{background:#7a5535;color:#fff}.rk.rd{background:#5a2724;color:#ffd5d1}}
+
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<div id="modal"></div>
+<script>
+/* ---------- Daten ---------- */
+const KEY='formel1-logger-v1';
+const COURSES0=['Austin','Nevada','Monaco','Deutschland','Belgien','GB','Brasilien','Buddh','Italien','Spanien','Portugal','Kanada','Singapur','Südafrika','Docks','Frankreich','Chicago','Sebring','New Jersey','Sotchi','Valencia','Baltimore'];
+const NAMES0=['André','Guido','Karsten','Martin'];
+const PTS0=[12,8,6,4,2,1];
+const MAXP=8;
+const byName=(a,b)=>String(a).localeCompare(String(b),'de');
+const newSeasonObj=(name,players,points,id)=>({id:id||Date.now(),name,start:new Date().toISOString(),players:[...players],points:[...points]});
+function fixSeason(s){s.players=(s.players||[]).filter(Boolean).slice(0,MAXP);s.points=[...(s.points||[])];while(s.points.length<6)s.points.push(0);s.points=s.points.slice(0,6).map(x=>+x||0);return s}
+function normalize(o){
+  o=o&&typeof o==='object'?o:{};
+  o.season=fixSeason(o.season||newSeasonObj('Saison 1',NAMES0,PTS0,1));
+  o.pastSeasons=(o.pastSeasons||[]).map(fixSeason);
+  o.days=Array.isArray(o.days)?o.days:[];
+  o.cur=o.cur||null;
+  o.days.forEach(d=>{if(d.season==null)d.season=o.season.id;d.res=d.res||{}});
+  if(o.cur){o.cur.res=o.cur.res||{};if(o.cur.season==null)o.cur.season=o.season.id}
+  o.courses=Array.isArray(o.courses)&&o.courses.length?o.courses:[...COURSES0];
+  [...o.days,...(o.cur?[o.cur]:[])].forEach(d=>{if(d.kurs&&!o.courses.includes(d.kurs))o.courses.push(d.kurs)});
+  const nl=new Set(o.nameList||[]);[o.season,...o.pastSeasons].forEach(s=>s.players.forEach(n=>nl.add(n)));o.days.forEach(d=>Object.keys(d.res).forEach(n=>nl.add(n)));
+  o.nameList=[...nl].sort(byName);
+  o.emails=o.emails||{};
+  o.appts=Array.isArray(o.appts)?o.appts:[];o.apptLog=Array.isArray(o.apptLog)?o.apptLog:[];
+  o.app='formel1-logger';
+  return o;
+}
+function load(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
+let S=normalize(load());
+let lastSnap=null,undoStack=[];
+function save(){
+  const cur=JSON.stringify(S);
+  if(lastSnap!==null&&cur!==lastSnap){undoStack.push(lastSnap);if(undoStack.length>80)undoStack.shift()}
+  lastSnap=cur;
+  try{localStorage.setItem(KEY,cur)}catch(e){}
+}
+function undo(){
+  if(!undoStack.length)return;
+  const prev=undoStack.pop();
+  S=normalize(JSON.parse(prev));lastSnap=prev;
+  try{localStorage.setItem(KEY,prev)}catch(e){}
+  closeModal();render();
+}
+const undoBtn=()=>`<button class="btn sec" ${undoStack.length?'':'disabled'} onclick="undo()" title="Letzte Änderung zurücknehmen">↶ Rückgängig${undoStack.length?' ('+undoStack.length+')':''}</button>`;
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let F=null,RF=null,SF=null;
+
+/* ---------- Rechnen ---------- */
+const seasonById=id=>id===S.season.id?S.season:S.pastSeasons.find(s=>s.id===id);
+const seasonName=id=>(seasonById(id)||{name:'?'}).name;
+const isCur=d=>d===S.cur;
+function dayRows(d){
+  const se=seasonById(d.season)||S.season;
+  return Object.keys(d.res).sort(byName).map(n=>{const r=d.res[n]||{};const pts=(!r.st&&r.place)?(se.points[r.place-1]||0):0;return {name:n,start:r.start||null,place:r.place||null,st:r.st||null,pts}});
+}
+function raceNo(d){const l=S.days.filter(x=>x.season===d.season);const i=l.indexOf(d);return i>=0?i+1:l.length+1}
+const fmtDay=d=>d&&d.date?fmtDE(String(d.date).slice(0,10)):'';
+const dd=d=>d&&d.date?' · '+fmtDay(d):'';
+let VIEWSEASON=null; // null = aktuelle Saison, 'all' = alle
+const viewSeason=()=>VIEWSEASON==null?S.season.id:VIEWSEASON;
+function daysOf(sel,withCur){
+  const l=S.days.filter(d=>sel==='all'||d.season===sel);
+  if(withCur&&S.cur&&(sel==='all'||sel===S.season.id)&&Object.values(S.cur.res).some(r=>r.place||r.st))l.push(S.cur);
+  return l;
+}
+function namesOf(days,extra){const s=new Set(extra||[]);days.forEach(d=>Object.keys(d.res).forEach(n=>s.add(n)));return [...s].sort(byName)}
+function totalsOf(days){
+  const t={},c={};
+  days.forEach(d=>dayRows(d).forEach(r=>{t[r.name]=(t[r.name]||0)+r.pts;c[r.name]=(c[r.name]||0)+1}));
+  return {t,c};
+}
+function ranksOf(t,names){const rk={};names.forEach(n=>{rk[n]=1+names.filter(o=>(t[o]||0)>(t[n]||0)).length});return rk} // 1. = meiste Punkte, Gleichstand = gleicher Platz
+const ptsTxt=se=>se.points.slice(0,Math.min(6,Math.max(se.players.length,1))).join(' / ');
+const unplayed=()=>S.courses.filter(c=>!S.days.some(d=>d.season===S.season.id&&d.kurs===c)&&!(S.cur&&S.cur.kurs===c));
+
+/* ---------- Start, Spielseite ---------- */
+let HOME=true;
+function goHome(){closeModal();HOME=true;render();window.scrollTo(0,0)}
+function goApp(){closeModal();HOME=false;render();window.scrollTo(0,0)}
+function home(){
+  const it=(ic,t,fn,cls)=>`<button class="menu-item ${cls||''}" onclick="${fn}"><span>${ic}</span>${t}</button>`;
+  const main=S.cur?it('▶','Spieltag fortsetzen ('+esc(S.cur.kurs)+')','goApp()','prim'):it('＋','Neuer Spieltag','goApp()','prim');
+  const items=[...(S.cur?[it('⚙','Einstellungen','openSettings()'),it('🗑','Spieltag verwerfen','discardDay()')]:[]),it('📋','Gesamtansicht','openOverview()'),it('📊','Statistik','openStats()'),it('🏆','Saisons','openSeasons()'),it('📅','Termine','openAppts()'),it('📤','Export / Senden','openExport()'),it('📥','Import','openImport()'),it('🔍','Suche','openSearch()'),it('❓','Hilfe','openHelp()'),it('ℹ','Info','openInfo()')];
+  return `<div class="home">${navBar(null,true)}<div class="homelogo" onclick="openInfo()">${logoSvg(0,240)}</div><h1 class="hometitle">${APP_NAME}</h1><div class="muted" style="text-align:center;margin-bottom:14px">${APP_TAG}<br><small>Version ${APP_VERSION} · ${esc(S.season.name)}</small></div><div class="homemain">${main}</div>${nextApptLine()}<div class="menu-grid">${items.join('')}</div></div>`;
+}
+function render(){
+  document.getElementById('app').innerHTML=HOME?home():S.cur?board():setup();
+  fixSticky();
+}
+function fixSticky(){
+  const t=document.getElementById('topbar'),h1=document.querySelector('tr.h1'),r=document.documentElement.style;
+  const topH=t&&getComputedStyle(t).position==='sticky'?t.offsetHeight:0;
+  r.setProperty('--topH',topH+'px');
+  r.setProperty('--h1H',h1?h1.offsetHeight+'px':'0px');
+  const h2=document.querySelector('tr.h2'),bigs=[...document.querySelectorAll('tr.big')];
+  r.setProperty('--h2H',h2?h2.offsetHeight+'px':'0px');
+  r.setProperty('--p1H',bigs[0]?bigs[0].offsetHeight+'px':'0px');
+  document.querySelectorAll('table.gt th .nm').forEach(e=>{e.style.fontSize='';let s=parseFloat(getComputedStyle(e).fontSize);while(e.scrollWidth>e.clientWidth+0.5&&s>9){s-=.5;e.style.fontSize=s+'px'}}); // Namen schrumpfen, bis sie in die Spalte passen
+  const head=topH+(h1?h1.offsetHeight:0)+(h2?h2.offsetHeight:0),stack=head+bigs.reduce((a,x)=>a+x.offsetHeight,0);
+  document.body.classList.toggle('pinOff',stack>innerHeight*0.6);
+  document.body.classList.toggle('headOff',head>innerHeight*0.55);
+}
+window.addEventListener('resize',fixSticky);
+let _wl=null;
+async function keepAwake(){
+  try{
+    if(!('wakeLock' in navigator)||!matchMedia('(min-width:901px) and (hover:hover)').matches)return;
+    if(_wl&&!_wl.released)return;
+    _wl=await navigator.wakeLock.request('screen');
+    _wl.addEventListener('release',()=>{_wl=null});
+  }catch(e){}
+}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')keepAwake()});
+window.addEventListener('focus',keepAwake);
+document.addEventListener('click',keepAwake);
+keepAwake();
+
+/* Neuer Spieltag (Einrichtung) */
+let SU=null;
+function setup(){
+  const se=S.season;
+  if(!SU||SU.season!==se.id)SU={season:se.id,kurs:'',other:false,date:ymd(new Date()),parts:[...se.players]};
+  const free=unplayed();
+  if(!SU.other&&!free.includes(SU.kurs))SU.kurs=free[0]||'';
+  const names=[...se.players].sort(byName);
+  const bad=!(SU.other?SU.kursTxt&&SU.kursTxt.trim():SU.kurs)||SU.parts.length<2;
+  return `${navBar('goHome()',true)}<h1 style="display:flex;align-items:center;gap:10px;cursor:pointer" onclick="goHome()" title="Startbildschirm">${logoSvg(0,40)} ${APP_NAME}</h1>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px;align-items:center">${undoBtn()}<button class="btn sec menu-btn" onclick="openMenu()">☰ Menü</button><span class="dsk"><button class="btn sec" onclick="openOverview()">📋 Gesamtansicht</button><button class="btn sec" onclick="openStats()">📊 Statistik</button><button class="btn sec" onclick="openSeasons()">🏆 Saisons</button><button class="btn sec" onclick="openExport()">📤 Export / Senden</button>${helpBtns()}<button class="btn sec" onclick="openImport()">📥 Import</button></span></div>
+  <div class="card">
+  <div class="prev" style="margin:0 0 6px;font-weight:400"><b>${esc(se.name)}</b> · ${se.players.length} Spieler · Punkte Platz 1–${Math.min(6,se.players.length)}: ${ptsTxt(se)} · ${S.days.filter(d=>d.season===se.id).length} Rennen gespielt <button class="btn sec sm" onclick="openSeasonEdit(${se.id})">Saison bearbeiten</button></div>
+  <label>Kurs (noch nicht gespielt in dieser Saison)</label>
+  <select onchange="suKurs(this.value)">${free.map(c=>`<option value="${esc(c)}" ${!SU.other&&SU.kurs===c?'selected':''}>${esc(c)}</option>`).join('')}<option value="__new" ${SU.other?'selected':''}>Anderer Kurs …</option></select>
+  ${SU.other?`<input type="text" id="suOther" style="margin-top:6px" placeholder="Name des Kurses" value="${esc(SU.kursTxt||'')}" oninput="SU.kursTxt=this.value;suBtn()">`:''}
+  <label>Datum</label><input type="date" value="${esc(SU.date)}" onchange="SU.date=this.value">
+  <label>Wer fährt mit?</label>
+  <div class="whobox">${names.map(n=>`<label class="chk"><input type="checkbox" ${SU.parts.includes(n)?'checked':''} onchange="suPart('${esc(n).replace(/'/g,"\\'")}',this.checked)"> ${esc(n)}</label>`).join('')}</div>
+  <p class="muted">Wer nicht mitfährt, wird gar nicht gezählt. Wer eingetragen ist, aber nicht fährt, wird später als „nicht angetreten“ vermerkt. Startplätze und Ergebnis trägst du nach dem Start über „Ergebnis eintragen“ ein.</p>
+  <button class="btn" id="suGo" ${bad?'disabled':''} onclick="startDay()">Spieltag starten</button>
+  </div>`;
+}
+function suKurs(v){if(v==='__new'){SU.other=true;SU.kursTxt=''}else{SU.other=false;SU.kurs=v}render();const e=document.getElementById('suOther');if(e)e.focus()}
+function suBtn(){const b=document.getElementById('suGo');if(b)b.disabled=!((SU.kursTxt||'').trim())||SU.parts.length<2}
+function suPart(n,on){const i=SU.parts.indexOf(n);if(on&&i<0)SU.parts.push(n);if(!on&&i>=0)SU.parts.splice(i,1);suBtn()}
+function startDay(){
+  const kurs=(SU.other?(SU.kursTxt||'').trim():SU.kurs);
+  if(!kurs||SU.parts.length<2)return;
+  if(!S.courses.includes(kurs))S.courses.push(kurs);
+  const res={};SU.parts.forEach(n=>{res[n]={start:null,place:null,st:null}});
+  S.cur={id:Date.now(),season:S.season.id,date:SU.date||ymd(new Date()),kurs,res};
+  SU=null;HOME=false;save();render();
+}
+function board(){
+  const d=S.cur,se=S.season;
+  const done=S.days.filter(x=>x.season===se.id);
+  const {t}=totalsOf(done);
+  const names=namesOf([...done,d],se.players);
+  const rk=ranksOf(t,names),anyDone=done.length>0;
+  const cr=Object.fromEntries(dayRows(d).map(r=>[r.name,r]));
+  const hh=names.map(n=>{const r=cr[n];const tag=!r?'nicht dabei':r.st==='dns'?'nicht angetreten':r.st==='dnf'?'ausgefallen'+(r.start?' · Start '+r.start:''):r.place?'Platz '+r.place+(r.start?' · Start '+r.start:''):(r.start?'Start '+r.start:'');
+    return `<th class="pc${anyDone?' rk':''}${r?'':' gone'}">${anyDone?`<span class="rnk" title="Platz in der Saison">${rk[n]}</span>`:''}<div class="nm">${esc(n)}</div><div class="tag">${tag}</div></th>`}).join('');
+  const tt=names.map(n=>`<th class="pc tot">${t[n]||0}</th>`).join('');
+  const rowOf=(x,big)=>{
+    const rr=Object.fromEntries(dayRows(x).map(r=>[r.name,r]));let sum=0;
+    const cells=names.map(n=>{const r=rr[n];if(!r)return `<td class="pc muted"></td>`;sum+=r.pts;
+      const tg=r.st==='dns'?'n.a.':r.st==='dnf'?'ausg.'+(r.start?' S'+r.start:''):r.place?'P'+r.place+(r.start?' · S'+r.start:''):(r.start?'S'+r.start:'');
+      return `<td class="pc ${r.st?'lost':''}"><b>${x===d&&!r.place&&!r.st?'-':r.pts}</b><div class="tag">${tg}</div></td>`}).join('');
+    const cur=x===d;
+    return `<tr class="row ${big}" onclick="rowTap(${cur?-1:S.days.indexOf(x)})" title="${cur?'Antippen: Ergebnis eintragen':'Doppelklick: Rennen öffnen'}"><td>${raceNo(x)}</td><td><span class="rn">${raceNo(x)}.</span> <b>${esc(x.kurs)}</b>${dd(x)}${cur?' <span class="opn">läuft</span>':''}</td>${cells}<td class="num"><b>${cur?'':sum}</b></td></tr>`;
+  };
+  const rows=[rowOf(d,'big big1'+(done.length?'':' bigLast')),...done.slice().reverse().map((x,i)=>rowOf(x,i===0?'big big2 bigLast':''))].join('');
+  const ban=`<div class="banner orange">Spieltag: <b>${esc(d.kurs)}</b>${dd(d)} · Rennen ${raceNo(d)} der ${esc(se.name)}${Object.values(d.res).some(r=>r.place||r.st)?' · Ergebnis noch nicht abgeschlossen':' · Ergebnis fehlt noch'}</div>`;
+  return `<div class="top" id="topbar">${navBar('goHome()',true)}<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="tlogo" onclick="goHome()" style="cursor:pointer;display:inline-flex" title="Startbildschirm">${logoSvg(0,34)}</span>${undoBtn()}<button class="btn sec menu-btn" onclick="openMenu()">☰ Menü</button><span class="dsk"><button class="btn sec" onclick="openSettings()">⚙ Einstellungen</button><button class="btn sec" onclick="openOverview()">📋 Gesamtansicht</button><button class="btn sec" onclick="openStats()">📊 Statistik</button><button class="btn sec" onclick="openSeasons()">🏆 Saisons</button><button class="btn sec" onclick="openExport()">📤 Export / Senden</button>${helpBtns()}</span></div>${ban}</div>
+  <div class="card"><table class="gt${names.length>5?' dense':''}" style="--np:${names.length}"><thead><tr class="h1"><th>#</th><th>Rennen</th>${hh}<th class="num">Σ</th></tr>
+  <tr class="h2"><th></th><th>Punkte in der Saison</th>${tt}<th class="num" title="Summe aller Punkte der Saison">Σ ${Object.values(t).reduce((a,b)=>a+b,0)}</th></tr></thead>
+  <tbody>${rows}</tbody></table></div>
+  <p class="muted">Zahl = Punkte im Rennen, darunter P = Endplatz, S = Startplatz, ausg. = ausgefallen, n.a. = nicht angetreten.</p>
+  <button class="btn fab" onclick="openRace(-1)">Ergebnis eintragen</button>`;
+}
+let LASTTAP={i:-2,t:0};
+function rowTap(i){
+  if(i===-1){openRace(-1);return}
+  const now=Date.now();
+  if(LASTTAP.i===i&&now-LASTTAP.t<600){LASTTAP={i:-2,t:0};openRace(i)}else LASTTAP={i,t:now};
+}
+
+/* ---------- Rennmaske ---------- */
+function openRace(idx){
+  const d=idx===-1?S.cur:S.days[idx];if(!d)return;
+  RF={idx,kurs:d.kurs,other:false,kursTxt:'',date:d.date||'',res:JSON.parse(JSON.stringify(d.res))};
+  drawRace();
+}
+function modalSheet(html,keepScroll){
+  const m=document.getElementById('modal'),old=m.querySelector('.sheet'),y=keepScroll&&old?old.scrollTop:0;
+  m.innerHTML=`<div class="modal"><div class="sheet">${navBar('closeModal()')}${html}</div></div>`;
+  if(y){const s=m.querySelector('.sheet');if(s)s.scrollTop=y}
+}
+const rfNames=()=>Object.keys(RF.res).sort(byName);
+const zielVal=r=>r.st?r.st:r.place?'p'+r.place:'';
+function rfCheck(){
+  const names=rfNames(),errs=[],N=names.length;
+  const fin=names.filter(n=>RF.res[n].place&&!RF.res[n].st).map(n=>RF.res[n].place).sort((a,b)=>a-b);
+  names.forEach(n=>{const r=RF.res[n];if(!r.st&&!r.place)errs.push(n+': Ergebnis fehlt');else if(r.st!=='dns'&&!r.start)errs.push(n+': Startplatz fehlt')});
+  fin.forEach((p,i)=>{if(p!==i+1&&!errs.some(e=>e.startsWith('Plätze')))errs.push('Plätze müssen lückenlos bei 1 beginnen (ohne Ausgefallene)')});
+  if(!RF.kurs&&!(RF.other&&(RF.kursTxt||'').trim()))errs.push('Kurs fehlt');
+  return errs;
+}
+function drawRace(){
+  const d=RF.idx===-1?S.cur:S.days[RF.idx],se=seasonById(d.season)||S.season;
+  const names=rfNames(),N=names.length,res=RF.res;
+  const usedS=new Set(names.map(n=>res[n].start).filter(Boolean)),usedP=new Set(names.filter(n=>!res[n].st).map(n=>res[n].place).filter(Boolean));
+  const q=n=>esc(n).replace(/'/g,"\\'");
+  const rows=names.map(n=>{
+    const r=res[n],dns=r.st==='dns';
+    const so=[`<option value="">–</option>`,...[...Array(N).keys()].map(i=>`<option value="${i+1}" ${r.start===i+1?'selected':''} ${usedS.has(i+1)&&r.start!==i+1?'disabled':''}>${i+1}</option>`)].join('');
+    const zo=[`<option value="" ${zielVal(r)===''?'selected':''}>–</option>`,...[...Array(N).keys()].map(i=>`<option value="p${i+1}" ${zielVal(r)==='p'+(i+1)?'selected':''} ${usedP.has(i+1)&&r.place!==i+1?'disabled':''}>Platz ${i+1}</option>`),`<option value="dnf" ${r.st==='dnf'?'selected':''}>Ausgefallen</option>`,`<option value="dns" ${dns?'selected':''}>Nicht angetreten</option>`].join('');
+    const pts=(!r.st&&r.place)?(se.points[r.place-1]||0):null;
+    return `<div class="rrow"><div class="rn2" title="${esc(n)}">${esc(n)}</div><select ${dns?'disabled':''} onchange="rfSet('${q(n)}','start',this.value)">${so}</select><select onchange="rfSet('${q(n)}','ziel',this.value)">${zo}</select><div class="rpt">${pts==null?(r.st?'0':'·'):pts}</div></div>`}).join('');
+  const errs=rfCheck(),ok=!errs.length;
+  const order=names.filter(n=>res[n].place&&!res[n].st).sort((a,b)=>res[a].place-res[b].place);
+  const prev=order.length?order.map(n=>res[n].place+'. '+esc(n)+' ('+(se.points[res[n].place-1]||0)+')').join(' · '):'Noch kein Platz vergeben.';
+  const dnf=names.filter(n=>res[n].st==='dnf'),dns=names.filter(n=>res[n].st==='dns');
+  const free=S.courses.filter(c=>c===RF.kurs||(!S.days.some(x=>x.season===d.season&&x.kurs===c&&x!==d)));
+  const isNew=RF.idx===-1,closed=!isNew;
+  modalSheet(`<h1>${closed?'Rennen '+raceNo(d)+' ändern':'Ergebnis eintragen'}</h1>
+  <div class="row2" style="grid-template-columns:1.3fr 1fr"><div><label>Kurs</label><select onchange="rfKurs(this.value)">${free.map(c=>`<option value="${esc(c)}" ${!RF.other&&RF.kurs===c?'selected':''}>${esc(c)}</option>`).join('')}<option value="__new" ${RF.other?'selected':''}>Anderer Kurs …</option></select></div>
+  <div><label>Datum</label><input type="date" value="${esc((RF.date||'').slice(0,10))}" onchange="RF.date=this.value"></div></div>
+  ${RF.other?`<input type="text" style="margin-top:6px" placeholder="Name des Kurses" value="${esc(RF.kursTxt)}" oninput="RF.kursTxt=this.value;rfBtn()">`:''}
+  <div class="rrow h"><div>Spieler</div><div>Start</div><div>Ziel</div><div style="text-align:right">Pkt</div></div>
+  ${rows}
+  <div class="prev">${prev}${dnf.length?'<div class="muted">Ausgefallen: '+dnf.map(esc).join(', ')+'</div>':''}${dns.length?'<div class="muted">Nicht angetreten: '+dns.map(esc).join(', ')+'</div>':''}</div>
+  ${errs.length?`<p class="muted" id="rfErr">Zum Abschließen fehlt noch: ${errs.map(esc).join(' · ')}</p>`:''}
+  <div class="btnbar">${closed?`<button class="btn sec" style="margin-right:auto" onclick="delRace()">🗑 Löschen</button>`:''}${isNew?`<button class="btn ${ok?'sec':''}" onclick="saveRace(false)">Zwischenspeichern</button>`:''}<button class="btn" id="rfGo" ${ok?'':'disabled'} onclick="saveRace(true)">${isNew?'Rennen abschließen':'Speichern'}</button><button class="btn sec" onclick="closeModal()">Abbrechen</button></div>`,true);
+}
+function rfBtn(){const e=rfCheck(),b=document.getElementById('rfGo');if(b)b.disabled=!!e.length}
+function rfKurs(v){if(v==='__new'){RF.other=true;RF.kursTxt=''}else{RF.other=false;RF.kurs=v}drawRace()}
+function rfSet(n,k,v){
+  const r=RF.res[n];
+  if(k==='start')r.start=v?+v:null;
+  else{
+    if(v===''){r.place=null;r.st=null}
+    else if(v==='dnf'){r.st='dnf';r.place=null}
+    else if(v==='dns'){r.st='dns';r.place=null;r.start=null}
+    else{r.st=null;r.place=+v.slice(1)}
+  }
+  drawRace();
+}
+function saveRace(final){
+  const d=RF.idx===-1?S.cur:S.days[RF.idx];
+  if(final&&rfCheck().length){drawRace();return}
+  const kurs=RF.other?(RF.kursTxt||'').trim():RF.kurs;
+  if(!kurs){toast('Bitte einen Kurs wählen.');return}
+  if(!S.courses.includes(kurs))S.courses.push(kurs);
+  d.kurs=kurs;d.date=RF.date||d.date;d.res=RF.res;
+  if(final&&RF.idx===-1){S.days.push(d);S.cur=null;save();closeModal();HOME=true;render();window.scrollTo(0,0);toast('Rennen '+raceNo(d)+' ('+kurs+') abgeschlossen');return}
+  save();closeModal();render();
+  if(!final)toast('Zwischengespeichert');
+}
+function delRace(){
+  const d=S.days[RF.idx];if(!d)return;const i=RF.idx;
+  ask(`Rennen ${raceNo(d)} (${esc(d.kurs)}${dd(d)}) löschen?`,'Weiter …',()=>ask('Wirklich endgültig löschen? Das Rennen verschwindet aus allen Auswertungen. „↶ Rückgängig“ kann es zurückholen, solange die App offen bleibt; sicherer ist vorher ein Export.','Ja, Rennen endgültig löschen',()=>{S.days.splice(i,1);save();render();toast('Rennen gelöscht')}));
+}
+function discardDay(){
+  if(!S.cur)return;
+  ask(`Laufenden Spieltag (${esc(S.cur.kurs)}) verwerfen?`,'Weiter …',()=>ask('Wirklich verwerfen? Alle bisher eingetragenen Startplätze und Ergebnisse dieses Spieltags gehen verloren.','Ja, Spieltag verwerfen',()=>{S.cur=null;SU=null;save();HOME=true;render()}));
+}
+
+/* ---------- Einstellungen, Saison bearbeiten ---------- */
+let SETONLY=false;
+function openFolderSettings(){SETONLY=true;openSettings()}
+function setEmail(i,v){const n=S.nameList[i];if(n==null)return;v=String(v||'').trim();if(v)S.emails[n]=v;else delete S.emails[n];save()}
+function openSettings(){
+  const folder=`<label>Ablageordner für Import und Export</label>
+  <div class="prev" style="margin:4px 0;font-weight:400">${folderLabel()?'Ordner: <b>'+esc(folderLabel())+'</b> – Export speichert dort, Import zeigt die Dateien dort.':'Nicht festgelegt – Standardordner des Geräts (Android: Downloads/F1Log) bzw. Download-Ordner des Browsers.'}</div>
+  ${canPickDir()?`<p class="muted">Tipp: Wähle einen eigenen Unterordner (z. B. „Formel1“), nicht „Dokumente“, „Downloads“ oder „Desktop“ selbst – die sperrt der Browser.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sec" onclick="pickDir()">Ordner wählen …</button>${folderLabel()?'<button class="btn sec" onclick="clearDir()">Ordner entfernen</button>':''}</div>`:'<p class="muted">Ein fester Ordner lässt sich nur in Chrome oder Edge am PC wählen. Auf dem Handy und in anderen Browsern bestimmt der Browser den Speicherort (meist „Downloads“).</p>'}`;
+  if(SETONLY){modalSheet(`<h1>Einstellungen</h1>${folder}${emailSection()}<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="btn sec" onclick="closeModal()">Schließen</button></div>`);return}
+  const se=S.season;
+  modalSheet(`<h1>Einstellungen</h1>
+  <label>Aktuelle Saison</label>
+  <div class="prev" style="margin:4px 0;font-weight:400"><b>${esc(se.name)}</b><br>Spieler: ${se.players.slice().sort(byName).map(esc).join(', ')}<br>Punkte: ${ptsTxt(se)}</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" onclick="openSeasonEdit(${se.id})">Saison bearbeiten (Spieler, Punkte)</button></div>
+  <p class="muted">Die Punkte für Platz 1–6 sowie Anzahl und Namen der Spieler (bis ${MAXP}) gelten je Saison. Für eine neue Saison: 🏆 Saisons → „Neue Saison“.</p>
+  ${folder}
+  ${emailSection()}
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">${S.cur?'<button class="btn bad" onclick="discardDay()">Spieltag verwerfen …</button>':''}<button class="btn sec" onclick="openImport()">📥 Import</button><button class="btn sec" onclick="closeModal()">Schließen</button></div>`);
+}
+function openSeasonEdit(id){
+  const se=id==null?null:seasonById(id);
+  if(id==null){ // neue Saison: Spieler und Punkte der aktuellen übernehmen
+    SF={id:null,name:'',players:S.season.players.map(n=>({orig:null,name:n})),points:[...S.season.points]};
+  }else SF={id:se.id,name:se.name,players:se.players.map(n=>({orig:n,name:n})),points:[...se.points]};
+  drawSeasonEdit();
+}
+function drawSeasonEdit(msg){
+  const nw=SF.id==null;
+  modalSheet(`<h1>${nw?'Neue Saison':'Saison bearbeiten'}</h1>
+  <label>Name der Saison</label><input type="text" value="${esc(SF.name)}" placeholder="z. B. 2027/2028" oninput="SF.name=this.value">
+  <label>Spieler (1 bis ${MAXP}) – die Tabelle sortiert sie alphabetisch</label>
+  ${SF.players.map((p,i)=>`<div class="row2" style="grid-template-columns:1fr auto;margin-bottom:6px"><input type="text" value="${esc(p.name)}" placeholder="Name" oninput="SF.players[${i}].name=this.value"><button class="btn sec" onclick="sfDel(${i})" title="Spieler entfernen">✕</button></div>`).join('')}
+  ${SF.players.length<MAXP?`<button class="btn sec" onclick="sfAdd()">＋ Spieler hinzufügen</button>`:'<span class="muted">Mehr als '+MAXP+' Spieler sind nicht möglich.</span>'}
+  <label>Punkte je Platz (Platz 7 und 8 sowie Ausgefallene und nicht Angetretene bekommen 0)</label>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${SF.points.map((v,i)=>`<div><label style="margin:0 0 2px">Platz ${i+1}</label><input type="number" min="0" step="1" inputmode="numeric" value="${v}" oninput="SF.points[${i}]=+this.value||0"></div>`).join('')}</div>
+  ${nw?'<p class="muted">Die aktuelle Saison wird abgeschlossen und gespeichert. Der Spieltag muss vorher beendet sein.</p>':'<p class="muted">Ändern der Punkte rechnet alle Rennen dieser Saison neu. Ein umbenannter Spieler wird in allen Rennen der Saison umbenannt.</p>'}
+  ${msg?`<p class="lost">${esc(msg)}</p>`:''}
+  <div class="btnbar"><button class="btn" onclick="saveSeasonEdit()">${nw?'Saison anlegen':'Speichern'}</button><button class="btn sec" onclick="closeModal()">Abbrechen</button></div>`,true);
+}
+function sfAdd(){if(SF.players.length<MAXP){SF.players.push({orig:null,name:''});drawSeasonEdit()}}
+function sfDel(i){SF.players.splice(i,1);drawSeasonEdit()}
+function saveSeasonEdit(){
+  const name=SF.name.trim(),pl=SF.players.map(p=>({orig:p.orig,name:p.name.trim()})).filter(p=>p.name);
+  if(!name){drawSeasonEdit('Bitte einen Namen für die Saison eingeben.');return}
+  if(pl.length<2){drawSeasonEdit('Mindestens 2 Spieler nötig.');return}
+  if(new Set(pl.map(p=>p.name)).size!==pl.length){drawSeasonEdit('Ein Name kommt doppelt vor.');return}
+  const points=SF.points.map(x=>Math.max(0,+x||0));
+  if(SF.id==null){
+    if(S.cur){drawSeasonEdit('Bitte zuerst den laufenden Spieltag abschließen oder verwerfen.');return}
+    S.pastSeasons.push({...S.season,end:new Date().toISOString()});
+    S.season=fixSeason({id:Date.now(),name,start:new Date().toISOString(),players:pl.map(p=>p.name),points});
+    VIEWSEASON=null;SU=null;
+  }else{
+    const se=seasonById(SF.id);
+    const ren={};pl.forEach(p=>{if(p.orig&&p.orig!==p.name)ren[p.orig]=p.name});
+    if(Object.keys(ren).length){[...S.days,...(S.cur?[S.cur]:[])].filter(d=>d.season===se.id).forEach(d=>{const r={};Object.keys(d.res).forEach(n=>{r[ren[n]||n]=d.res[n]});d.res=r})}
+    se.name=name;se.players=pl.map(p=>p.name);se.points=points;fixSeason(se);SU=null;
+  }
+  S.nameList=S.nameList.filter(n=>!Object.keys(SF.players.reduce((a,p)=>{if(p.orig&&p.orig!==p.name.trim())a[p.orig]=1;return a},{})).includes(n));S=normalize(S);save();closeModal();render();toast('Saison gespeichert');
+}
+
+function closeModal(){document.getElementById('modal').innerHTML='';F=null;SHEETSTACK=[];SETONLY=false}
+/* ---------- Navigation: ← zurück (oben links), ✕ Anwendung schließen (oben rechts) ---------- */
+let SHEETSTACK=[]; // zuvor geöffnete Fenster (z. B. Gesamtansicht → Statistik → zurück zur Gesamtansicht)
+function sheetBack(){const p=SHEETSTACK.pop();if(p)document.getElementById('modal').innerHTML=p;else closeModal()}
+function quitApp(){
+  if(androidApp()&&androidApp().closeApp){androidApp().closeApp();return} // Android: ganze App schließen
+  // Windows-Programm: der Host beendet alle Fenster und sich selbst (auch wenn mehrere Fenster offen sind)
+  fetch('/quit',{method:'POST'}).then(r=>{if(!r.ok)throw 0}).catch(()=>{
+    window.close();
+    setTimeout(()=>toast('Hier lässt sich das Fenster nicht per Knopf schließen – bitte den Tab bzw. die App selbst schließen. Alle Daten sind gespeichert.',6000),500);
+  });
+}
+// ← links, ⚙ (nur Import-/Export-Ordner) in der Mitte, ✕ rechts (schließt das aktuelle Fenster, auf dem Startbildschirm die App); page=true für Seiten (nicht schwebend in Fenstern)
+function navBar(back,page){
+  // 🏠 (Startbildschirm) steht auf jeder Seite ganz links, auch auf dem Startbildschirm selbst; ← (ein Fenster zurück) daneben, wo es sinnvoll ist
+  // ✕ schließt nur das aktuelle Fenster (Fenster: zurück zur Seite darunter; Spielseite/Einrichtung: zurück zum Start); nur auf der ersten Seite (Startbildschirm) beendet es die App
+  const x=page?(back?'goHome()':'quitApp()'):'closeModal()',xt=page&&!back?'Anwendung schließen':'Fenster schließen';
+  const bk=back&&!page?`<button class="nb" onclick="${back}" title="Zurück" aria-label="Zurück">←</button>`:'';
+  return `<div class="navbar${page?' pg':''}"><span class="nbl"><button class="nb" onclick="goHome()" title="Startbildschirm" aria-label="Startbildschirm">🏠</button>${bk}</span><span class="nbio"><button class="nb" onclick="openFolderSettings()" title="Einstellungen: Ordner für Import und Export" aria-label="Einstellungen">⚙</button></span><button class="nb" onclick="${x}" title="${xt}" aria-label="${xt}">✕</button></div>`}
+function ask(text,yes,fn){
+  window._ask=fn;
+  document.getElementById('modal').innerHTML=`<div class="modal"><div class="sheet"><h1>${text}</h1><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn bad" onclick="closeModal();window._ask()">${yes}</button><button class="btn sec" onclick="closeModal()">Abbrechen</button></div></div></div>`;
+}
+function setEmail(i,v){const n=S.nameList[i];if(n==null)return;v=String(v||'').trim();if(v)S.emails[n]=v;else delete S.emails[n];save()}
+const mailList=()=>[...new Set(S.nameList.map(n=>String((S.emails||{})[n]||'').trim()).filter(x=>/.@./.test(x)))];
+function emailSection(){
+  return `<label>E-Mail-Adressen (zum Versand des Ergebnisses; stehen in der Exportdatei)</label>${S.nameList.map((n,i)=>`<div class="row2" style="margin-bottom:6px;align-items:center"><span>${esc(n)}</span><input type="email" inputmode="email" autocomplete="off" placeholder="name@beispiel.de" value="${esc((S.emails||{})[n]||'')}" onchange="setEmail(${i},this.value)"></div>`).join('')}`;
+}
+function showSheet(html){
+  const m=document.getElementById('modal'),h1=t=>(String(t).match(/<h1>(.*?)<\/h1>/)||[])[1];
+  if(!m.innerHTML.trim())SHEETSTACK=[];else if(h1(m.innerHTML)!==h1(html)&&h1(m.innerHTML)!=null)SHEETSTACK.push(m.innerHTML);
+  m.innerHTML=`<div class="modal"><div class="sheet wide">${navBar('sheetBack()')}${html}</div></div>`}
+function tieK(names,rk,n){return Math.min(4,names.filter(o=>rk[o]===rk[n]).length)<2?0:Math.min(4,names.filter(o=>rk[o]===rk[n]).length)}
+const isMartin=n=>/^\s*martin\s*$/i.test(n||'');
+/* Podest-Symbol: Platz 1–3 = Männchen auf der jeweiligen Stufe, Platz 4 = gestolpertes Männchen neben der Treppe */
+function podiumIcon(rank,w,tie,martin){
+  // tie: Anzahl der Spieler auf diesem Platz (0 = allein, sonst 2–4: das linke Männchen schwarz, alle anderen grau). Bei Martin schubst das schwarze alle grauen (sie stürzen nach rechts); bei allen anderen stürzt das schwarze nach links.
+  w=w||72;tie=tie||0;
+  const steps=[[2,2,18,26,'#b8c0c8'],[1,20,18,18,'#e8b923'],[3,38,18,32,'#c98b52']]; // Platz, x, Breite, Oberkante, Farbe
+  const base=40,DARK='var(--ink)',LIGHT='#aab0b6';
+  const blocks=steps.map(([r,x,sw,top,c])=>`<rect x="${x}" y="${top}" width="${sw}" height="${base-top}" fill="${rank===r?c:'var(--line)'}" stroke="var(--mute)" stroke-width=".6"/><text x="${x+sw/2}" y="${base-3}" font-size="8" text-anchor="middle" fill="var(--ink)" opacity=".7">${r}</text>`).join('');
+  // Männchen mit Füßen im Ursprung; arms: 'up' Arme hoch, 'push' Arme nach rechts, 'pushL' nach links, sonst Arme hängend
+  const man=(arms,col)=>{
+    const fig=`stroke="${col}" stroke-width="1.8" stroke-linecap="round" fill="none"`;
+    const a=arms==='up'?'M0 -8L-4 -13M0 -8L4 -13':arms==='push'?'M0 -8L7 -9M0 -8L-4 -5':arms==='pushL'?'M0 -8L-7 -9M0 -8L4 -5':'M0 -8L-4 -5M0 -8L4 -5';
+    return `<circle cx="0" cy="-12" r="3" fill="${col}"/><path ${fig} d="M0 -9V-3M0 -3L-3 0M0 -3L3 0M${a}"/>`;
+  };
+  let f;
+  if(rank>=1&&rank<=3){
+    const st=steps.find(x=>x[0]===rank),x0=st[1],sw=st[2],top=st[3];
+    if(tie>=2){
+      const slot=i=>x0+(i+.5)*sw/tie;
+      f=[...Array(tie).keys()].map(i=>{
+        const col=i?LIGHT:DARK; // ganz links schwarz, alle anderen grau
+        if(martin)return i?`<g transform="translate(${slot(i)} ${top}) rotate(62)">${man('up',col)}</g>`:`<g transform="translate(${slot(i)} ${top})">${man('push',col)}</g>`; // Martin (schwarz) schubst alle grauen
+        return i?`<g transform="translate(${slot(i)} ${top})">${man('',col)}</g>`:`<g transform="translate(${x0+2} ${top}) rotate(-62)">${man('up',col)}</g>`; // sonst stürzt das schwarze nach links
+      }).join('');
+    }
+    else f=`<g transform="translate(${x0+sw/2} ${top})">${man(rank===1?'up':'',DARK)}</g>`;
+  }else f=`<g transform="translate(66 40) rotate(62)">${man('',DARK)}</g><path stroke="${DARK}" stroke-width="1.8" stroke-linecap="round" fill="none" d="M58 28L55 25M62 26L62 22M54 31L50 30" opacity=".6"/>`;
+  const lab=rank<=3?rank+'. Platz'+(tie?' (Gleichstand)':''):rank+'. Platz – gestolpert';
+  return `<svg class="podi" viewBox="-10 0 86 42" width="${Math.round(w*86/76)}" height="${Math.round(w*86/76*42/86)}" role="img" aria-label="${lab}">${blocks}${f}</svg>`;
+}
+function fixOv(){
+  const w=document.querySelector('#modal .statwrap.ov');if(!w)return;
+  const th=w.querySelector('thead'),r1=th&&th.querySelector('tr'),p1=w.querySelector('tbody tr.pin1');
+  w.style.setProperty('--r1H',(r1?r1.offsetHeight:38)+'px');
+  w.style.setProperty('--hdH',(th?th.offsetHeight:76)+'px');
+  w.style.setProperty('--p1H',(p1?p1.offsetHeight:56)+'px');
+}
+window.addEventListener('resize',()=>{try{fixOv()}catch(e){}});
+/* ---------- Gesamtansicht, Saisons, Statistik ---------- */
+function seasonSelect(fn){
+  const all=[...S.pastSeasons,S.season];
+  return `<select style="margin-bottom:8px" onchange="VIEWSEASON=this.value==='all'?'all':+this.value;STATSEL='all';${fn}()"><option value="all" ${viewSeason()==='all'?'selected':''}>Alle Saisons</option>${all.slice().reverse().map(s=>`<option value="${s.id}" ${viewSeason()===s.id?'selected':''}>${esc(s.name)}${s.id===S.season.id?' (aktuell)':''}</option>`).join('')}</select>`;
+}
+const rkChip=r=>r.st==='dns'?'<span class="rk rg">n.a.</span>':r.st==='dnf'?'<span class="rk rd">ausg.</span>':r.place?`<span class="rk r${r.place}">${r.place}.</span>`:'';
+function openOverview(){
+  const sel=viewSeason(),list=daysOf(sel,true);
+  const names=namesOf(list,sel===S.season.id?S.season.players:[]);
+  const {t,c}=totalsOf(list);
+  const act=names.filter(n=>c[n]);const rk=ranksOf(t,act);
+  const multi=sel==='all';
+  const rows=list.slice().reverse().map((d,zx)=>{
+    const rr=Object.fromEntries(dayRows(d).map(r=>[r.name,r]));let sum=0;
+    const cells=names.map(n=>{const r=rr[n];if(!r)return `<td class="pc muted">-</td>`;sum+=r.pts;
+      return `<td class="pc"><b>${isCur(d)&&!r.place&&!r.st?'-':r.pts}</b> ${rkChip(r)}<div class="tag">${r.start?'Start '+r.start:''}</div></td>`}).join('');
+    const idx=S.days.indexOf(d);
+    return `<tr class="${zx%2?'z':''}"><td><b>${esc(d.kurs)}</b>${isCur(d)?' <span class="opn">läuft</span>':''}<div class="muted">Rennen ${raceNo(d)}${dd(d)}${multi?' · '+esc(seasonName(d.season)):''}</div><div style="margin-top:2px"><button class="btn sec sm" style="min-height:28px;padding:2px 10px" onclick="${isCur(d)?'closeModal();goApp()':`openRace(${idx})`}" title="Rennen ${isCur(d)?'öffnen':'ändern'}">${isCur(d)?'▶ läuft':'✎'}</button></div></td>${cells}<td class="pc"><b>${isCur(d)?'':sum}</b></td></tr>`}).join('');
+  showSheet(`<h1>Gesamtansicht</h1>${seasonSelect('openOverview')}${list.length?`<div class="statwrap ov"><table><thead><tr><th>Rennen</th>${names.map(n=>`<th class="pc">${rk[n]?podiumIcon(rk[n],names.length>4?46:72,tieK(act,rk,n),isMartin(n)):''}${esc(n)}</th>`).join('')}<th class="pc">Σ</th></tr>
+  <tr><th>Summe (${list.length} Rennen)</th>${names.map(n=>`<th class="pc tot2">${t[n]||0}<div class="tag">${c[n]||0} Rennen</div></th>`).join('')}<th class="pc tot2">${Object.values(t).reduce((a,b)=>a+b,0)}</th></tr></thead><tbody>${rows}</tbody></table></div>
+  <p class="muted">Zahl = Punkte im Rennen, danach der Endplatz („ausg.“ = ausgefallen, „n.a.“ = nicht angetreten, beides 0 Punkte), darunter der Startplatz. Spieler sind alphabetisch sortiert. Der Platz in der Wertung (Podest-Symbol) richtet sich nach den Gesamtpunkten, die meisten Punkte = Platz 1. Mit ✎ lässt sich ein Rennen korrigieren oder löschen.</p>`:'<p class="muted">Noch kein Rennen vorhanden.</p>'}
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" onclick="STATSEL='all';openStats()">Statistik</button><button class="btn sec" onclick="openSeasons()">🏆 Saisons</button><button class="btn sec" onclick="closeModal()">Schließen</button></div>`);
+  fixOv();
+}
+function openSeasons(){
+  const seasons=[...S.pastSeasons,S.season].slice().reverse();
+  const data=seasons.map(se=>{const list=daysOf(se.id,se.id===S.season.id);const {t,c}=totalsOf(list);const wins={};list.forEach(d=>dayRows(d).forEach(r=>{if(r.place===1&&!r.st)wins[r.name]=(wins[r.name]||0)+1}));return {se,list,t,c,wins}});
+  const names=[...new Set(data.flatMap(d=>Object.keys(d.c)))].sort(byName);
+  const pw=names.length>4?46:56;
+  const rows=data.map(d=>{
+    const act=names.filter(n=>d.c[n]),rk=ranksOf(d.t,act);
+    return `<tr><td><b>${esc(d.se.name)}</b>${d.se.id===S.season.id?' <span class="rk r1">aktuell</span>':''}<div class="muted">${d.list.length} Rennen</div></td>
+      ${names.map(n=>d.c[n]?`<td class="pc">${d.list.length?podiumIcon(rk[n],pw,tieK(act,rk,n),isMartin(n)):''}<b>${d.t[n]}</b><div class="tag">${d.wins[n]||0} Siege</div></td>`:'<td class="pc muted">-</td>').join('')}</tr>
+      <tr><td colspan="${names.length+1}" style="background:var(--chip)"><div style="position:sticky;left:8px;width:min(340px,calc(100vw - 64px))"><div class="muted" style="margin-bottom:4px">${d.se.players.length} Spieler · Punkte ${ptsTxt(d.se)}</div><button class="btn sec sm" onclick="VIEWSEASON=${d.se.id};STATSEL='all';openStats()">📊 Statistik</button> <button class="btn sec sm" onclick="VIEWSEASON=${d.se.id};openOverview()">📋 Rennen</button> <button class="btn sec sm" onclick="openSeasonEdit(${d.se.id})">✎ Bearbeiten</button> <button class="btn sec sm" title="Saison löschen" onclick="delSeason(${d.se.id})">🗑 Löschen</button></div></td></tr>`}).join('');
+  showSheet(`<h1>Saisons</h1><div class="scroll"><table><thead><tr><th>Saison</th>${names.map(n=>`<th class="pc">${esc(n)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>
+  <p class="muted">Zahl = Gesamtpunkte der Saison, darunter die Siege. Die Punktevergabe und die Spieler gelten je Saison.</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button class="btn" onclick="newSeasonDlg()">＋ Neue Saison</button><button class="btn sec" onclick="closeModal()">Schließen</button></div>
+  <p id="seasonMsg" class="lost"></p>`);
+}
+function newSeasonDlg(){
+  if(S.cur){const m=document.getElementById('seasonMsg');if(m)m.textContent='Bitte zuerst den laufenden Spieltag abschließen oder verwerfen.';return}
+  openSeasonEdit(null);
+}
+function delSeason(id){
+  const se=seasonById(id);if(!se)return;
+  const nd=S.days.filter(d=>d.season===id).length;
+  ask(`Saison „${esc(se.name)}“ löschen? Sie hat ${nd} Rennen.`,'Weiter …',()=>ask(`Wirklich endgültig löschen? Die Saison „${esc(se.name)}“ und alle ${nd} Rennen verschwinden.${id===S.season.id?' Die zuletzt begonnene ältere Saison wird wieder die aktuelle (ohne ältere beginnt eine neue leere Saison).':''} Sicherer ist vorher ein Export; „↶ Rückgängig“ holt sie zurück, solange die App offen bleibt.`,'Ja, Saison endgültig löschen',()=>doDelSeason(id)));
+}
+function doDelSeason(id){
+  S.days=S.days.filter(d=>d.season!==id);
+  if(S.cur&&S.cur.season===id)S.cur=null;
+  if(id===S.season.id){
+    const prev=S.pastSeasons.pop();
+    if(prev){delete prev.end;S.season=prev}else S.season=newSeasonObj('Saison 1',S.season.players,S.season.points);
+  }else S.pastSeasons=S.pastSeasons.filter(s=>s.id!==id);
+  VIEWSEASON=null;SU=null;save();render();openSeasons();toast('Saison gelöscht');
+}
+
+/* ---------- Statistik ---------- */
+let STATVIEW='charts',STATSEL='all',STATPL=null,STATMX='all';
+const nf1=v=>(Math.round(v*10)/10).toLocaleString('de-DE');
+const plCol=k=>['#e8b923','#b8c0c8','#c98b52','var(--c1)','var(--c3)','var(--c7)','var(--c2)','var(--c5)'][k-1];
+function computeStats(days){
+  const names=namesOf(days);
+  const N=Math.min(MAXP,Math.max(4,...days.map(d=>Object.keys(d.res).length),0));
+  const st={};
+  names.forEach(n=>{st[n]={n,races:0,started:0,fin:0,dnf:0,dns:0,pts:0,pl:Array(N+2).fill(0),pole:0,poleWin:0,sSum:0,sCnt:0,pSum:0,gain:0,gainCnt:0,bestGain:null,maxPts:0,podium:0,starts:Array(N+2).fill(0),mx:{}}});
+  const cum={};names.forEach(n=>{cum[n]=0});
+  const series=names.map(()=>[]),labels=[];
+  days.forEach(d=>{
+    const rows=dayRows(d),byN=Object.fromEntries(rows.map(r=>[r.name,r]));
+    rows.forEach(r=>{
+      const s=st[r.name];s.races++;
+      if(r.st==='dns'){s.dns++;return}
+      s.started++;
+      if(r.start){s.sSum+=r.start;s.sCnt++;if(r.start<=N)s.starts[r.start]++;if(r.start===1)s.pole++}
+      const key=r.st==='dnf'?'dnf':r.place;
+      if(r.start&&key){const m=s.mx[r.start]=s.mx[r.start]||{};m[key]=(m[key]||0)+1}
+      if(r.st==='dnf'){s.dnf++;return}
+      if(!r.place)return;
+      s.fin++;s.pl[Math.min(r.place,N+1)]++;s.pts+=r.pts;s.pSum+=r.place;s.maxPts=Math.max(s.maxPts,r.pts);if(r.place<=3)s.podium++;
+      if(r.start){const g=r.start-r.place;s.gain+=g;s.gainCnt++;if(s.bestGain==null||g>s.bestGain)s.bestGain=g;if(r.start===1&&r.place===1)s.poleWin++}
+    });
+    names.forEach((n,i)=>{cum[n]+=(byN[n]?byN[n].pts:0);series[i].push(cum[n])});
+    labels.push('R'+raceNo(d));
+  });
+  return {names,N,st,series,labels};
+}
+function statCharts(C,days){
+  const {names,N,st,series,labels}=C;
+  const pc=n=>colVar(S.nameList.indexOf(n)>=0?S.nameList.indexOf(n):names.indexOf(n));
+  const items=f=>names.map(n=>({l:n,v:f(st[n]),c:pc(n)}));
+  const sum=f=>names.reduce((a,n)=>a+f(st[n]),0);
+  let h='';
+  const card=(t,sub,body,wide)=>`<div class="chartcard${wide?' wide':''}"><h3>${t}</h3><p class="muted">${sub}</p>${body}</div>`;
+  const dn=(f,big,small,aria)=>{const it=items(f);return donutSVG(it,aria,big,small)+legendHTML(it)};
+  h+=card('Punkte je Spieler','Anteil an allen vergebenen Punkten',dn(s=>s.pts,nf(sum(s=>s.pts)),'Punkte','Punkte je Spieler'));
+  h+=card('Siege (Platz 1)','Anteil an allen Rennsiegen',dn(s=>s.pl[1],String(sum(s=>s.pl[1])),'Siege','Siege je Spieler'));
+  h+=card('Im Rennen ausgefallen','Anteil an allen Ausfällen',dn(s=>s.dnf,String(sum(s=>s.dnf)),'Ausfälle','Ausfälle je Spieler'));
+  h+=card('Nicht angetreten','Anteil an allen Fehltagen',dn(s=>s.dns,String(sum(s=>s.dns)),'nicht angetreten','Nicht angetreten je Spieler'));
+  // Einzelspieler: Platzierungen und Startplätze
+  if(!STATPL||!names.includes(STATPL))STATPL=names[0];
+  const p=st[STATPL];
+  if(p){
+    const pi=[...Array(N).keys()].map(i=>({l:'Platz '+(i+1),v:p.pl[i+1],c:plCol(i+1)})).concat([{l:'ausgefallen',v:p.dnf,c:'var(--bad)'},{l:'nicht angetreten',v:p.dns,c:'var(--mute)'}]);
+    const si=[...Array(N).keys()].map(i=>({l:'Start '+(i+1),v:p.starts[i+1],c:plCol(i+1)}));
+    const sel=`<select style="margin-bottom:8px" onchange="STATPL=this.value;openStats(STATSEL)">${names.map(n=>`<option ${n===STATPL?'selected':''}>${esc(n)}</option>`).join('')}</select>`;
+    h+=card('Platzierungen von …','Alle Rennen des Zeitraums, auch Ausfälle',sel+donutSVG(pi,'Platzierungen von '+STATPL,String(p.races),'Rennen')+legendHTML(pi));
+    h+=card('Startplätze von '+esc(STATPL),'Von welchem Startplatz ging es los?',donutSVG(si,'Startplätze von '+STATPL,String(p.sCnt),'Starts')+legendHTML(si));
+  }
+  const ser=[...Array(N).keys()].map(i=>({l:'Platz '+(i+1),c:plCol(i+1)})).concat([{l:'ausgefallen',c:'var(--bad)'},{l:'nicht angetreten',c:'var(--mute)'}]);
+  const rows=names.map(n=>({name:n,vals:[...Array(N).keys()].map(i=>st[n].pl[i+1]).concat([st[n].dnf,st[n].dns]),s:st[n]}));
+  h+=card('Platzierungen je Spieler','Anzahl je Platz, Ausfälle und nicht angetreten',hbarsHTML(rows,ser,r=>`${r.s.fin} gewertet · ${r.s.dnf} ausgefallen · ${r.s.dns} nicht angetreten · ${r.s.pts} Punkte`)+legendHTML(ser.map(x=>({...x,v:0,pct:false})),()=>''),true);
+  if(series.length&&labels.length>=2&&viewSeason()!=='all'){
+    h+=card('Punkteverlauf','Gesamtpunkte nach jedem Rennen',lineSVG(labels,names.map((n,i)=>({name:n,c:pc(n),vals:series[i]})),'Punkteverlauf')+legendHTML(names.map(n=>({l:n,v:st[n].pts,c:pc(n)})),x=>nf(x.v)),true);
+  }
+  return `<div class="charts">${h}</div>`;
+}
+function statTable(C,days){
+  const {names,N,st}=C;
+  const {t}=totalsOf(days);const rk=ranksOf(t,names);
+  let z=0;
+  const sec=l=>`<tr class="sec"><th colspan="${names.length+1}">${l}</th></tr>`;
+  const row=(l,f)=>`<tr class="${z++%2?'z':''}"><td>${l}</td>${names.map(n=>`<td class="pc"><b>${f(st[n],n)}</b></td>`).join('')}</tr>`;
+  const avg=(a,b,d)=>b?nf1(a/b):'–';
+  const pct=(a,b)=>b?Math.round(100*a/b)+' %':'–';
+  let b=sec('Punkte')+row('Gesamtpunkte',s=>s.pts)+row('Platz in der Wertung',(s,n)=>s.races?rk[n]+'.':'–')+row('Ø Punkte je Rennen',s=>avg(s.pts,s.races))+row('Meiste Punkte in einem Rennen',s=>s.maxPts||'–');
+  b+=sec('Teilnahme')+row('Rennen (eingetragen)',s=>s.races)+row('Gestartet',s=>s.started)+row('Nicht angetreten',s=>s.dns)+row('Im Rennen ausgefallen',s=>s.dnf)+row('Ausfallquote (von gestartet)',s=>pct(s.dnf,s.started))+row('Gewertet (im Ziel)',s=>s.fin);
+  b+=sec('Platzierungen (Anzahl)');
+  for(let i=1;i<=N;i++)b+=row(i+'. Platz',s=>s.pl[i]);
+  b+=row('Podium (Platz 1–3)',s=>s.podium)+row('Ø Endplatz',s=>avg(s.pSum,s.fin));
+  b+=sec('Startplätze')+row('Ø Startplatz',s=>avg(s.sSum,s.sCnt))+row('Pole-Position (Start 1)',s=>s.pole)+row('Sieg von Start 1',s=>s.poleWin)+row('Ø Plätze gewonnen (Start → Ziel)',s=>s.gainCnt?((s.gain>0?'+':'')+nf1(s.gain/s.gainCnt)):'–')+row('Plätze gewonnen gesamt',s=>s.gainCnt?((s.gain>0?'+':'')+s.gain):'–')+row('Beste Aufholjagd',s=>s.bestGain!=null?((s.bestGain>0?'+':'')+s.bestGain):'–');
+  // Startplatz → Endplatz (Matrix)
+  const who=STATMX==='all'||!names.includes(STATMX)?names:[STATMX];
+  const mx={};let big=0;
+  for(let a=1;a<=N;a++){mx[a]={};who.forEach(n=>{const m=(st[n].mx[a]||{});Object.keys(m).forEach(k=>{mx[a][k]=(mx[a][k]||0)+m[k]})});Object.values(mx[a]).forEach(v=>{big=Math.max(big,v)})}
+  const cols=[...Array(N).keys()].map(i=>i+1);
+  const mtab=`<div class="statwrap mxw"><table class="mx"><thead><tr><th>Start ↓ / Ziel →</th>${cols.map(c=>`<th class="pc">${c}.</th>`).join('')}<th class="pc">ausg.</th></tr></thead><tbody>${cols.map(a=>`<tr><td><b>Start ${a}</b></td>${[...cols,'dnf'].map(k=>{const v=mx[a][k]||0;return `<td class="pc" style="${v?`background:rgba(31,107,74,${(.12+.35*v/Math.max(big,1)).toFixed(2)})`:''}">${v||''}</td>`}).join('')}</tr>`).join('')}</tbody></table></div>`;
+  return `<div class="statwrap"><table><thead><tr><th></th>${names.map(n=>`<th class="pc">${esc(n)}</th>`).join('')}</tr></thead><tbody>${b}</tbody></table></div>
+  <h3>Startplatz → Endplatz</h3>
+  <select style="margin:6px 0" onchange="STATMX=this.value;openStats(STATSEL)"><option value="all" ${who===names?'selected':''}>Alle Spieler zusammen</option>${names.map(n=>`<option ${who.length===1&&who[0]===n?'selected':''}>${esc(n)}</option>`).join('')}</select>
+  ${mtab}<p class="muted">Zeile = Startplatz, Spalte = Endplatz: wie oft ein Rennen von diesem Startplatz aus auf diesem Platz endete. „ausg.“ = ausgefallen.</p>`;
+}
+function openStats(sel){
+  if(sel!==undefined)STATSEL=sel;
+  const season=daysOf(viewSeason(),true);
+  let days=season;
+  if(STATSEL!=='all'){const d=season.find(x=>(isCur(x)?'cur':'d'+x.id)===STATSEL);if(d)days=[d];else STATSEL='all'}
+  const C=computeStats(days);
+  const dsel=`<select style="margin-bottom:8px" onchange="openStats(this.value)"><option value="all" ${STATSEL==='all'?'selected':''}>Alle Rennen${viewSeason()==='all'?'':' der Saison'}</option>${season.slice().reverse().map(d=>{const v=isCur(d)?'cur':'d'+d.id;return `<option value="${v}" ${STATSEL===v?'selected':''}>${isCur(d)?'Laufender Spieltag':'Rennen '+raceNo(d)}: ${esc(d.kurs)} ${fmtDay(d)?'('+fmtDay(d)+')':''}${viewSeason()==='all'?' · '+esc(seasonName(d.season)):''}</option>`}).join('')}</select>`;
+  const tot=totalsOf(days).t,sumP=Object.values(tot).reduce((a,b)=>a+b,0);
+  showSheet(`<h1>Statistik</h1><div class="selrow">${seasonSelect('openStats')}${dsel}</div>
+  <div class="seg" style="margin:4px 0 8px"><button class="${STATVIEW==='charts'?'on':''}" onclick="STATVIEW='charts';openStats()">📊 Diagramme</button><button class="${STATVIEW==='table'?'on':''}" onclick="STATVIEW='table';openStats()">📋 Tabelle</button></div>
+  <h3 style="margin:8px 0">${days.length} Rennen · ${nf(sumP)} Punkte vergeben</h3>
+  ${days.length?(STATVIEW==='charts'?statCharts(C,days):statTable(C,days)):'<p class="muted">Noch kein Rennen im gewählten Zeitraum.</p>'}
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn sec" onclick="openOverview()">📋 Gesamtansicht</button><button class="btn sec" onclick="closeModal()">Schließen</button></div>`);
+}
+
+/* ---------- Diagramme (SVG/HTML, ohne Bibliothek) ---------- */
+const colVar=i=>`var(--c${(i%8)+1})`;
+const nf=n=>Math.round(n).toLocaleString('de-DE');
+function legendHTML(items,fmt){
+  const tot=items.reduce((s,x)=>s+x.v,0);
+  return `<div class="legend">${items.map(x=>`<span class="it"><i class="sw" style="background:${x.c}"></i>${esc(x.l)} <b>${fmt?fmt(x):nf(x.v)}</b>${tot&&x.pct!==false?` <span class="muted">${Math.round(100*x.v/tot)} %</span>`:''}</span>`).join('')}</div>`;
+}
+function donutSVG(items,aria,big,small){
+  const tot=items.reduce((s,x)=>s+x.v,0);
+  if(!tot)return '<p class="muted">Noch keine Daten.</p>';
+  const cx=110,cy=110,R=100,r=60;let a0=-Math.PI/2,paths='';
+  const pt=(a,rad)=>[(cx+rad*Math.cos(a)).toFixed(2),(cy+rad*Math.sin(a)).toFixed(2)];
+  items.forEach(x=>{
+    if(!x.v)return;
+    const frac=x.v/tot,a1=a0+frac*2*Math.PI;let d;
+    if(frac>=0.9999){d=`M${cx} ${cy-R}A${R} ${R} 0 1 1 ${cx-0.01} ${cy-R}L${cx-0.01} ${cy-r}A${r} ${r} 0 1 0 ${cx} ${cy-r}Z`}
+    else{const [x0,y0]=pt(a0,R),[x1,y1]=pt(a1,R),[x2,y2]=pt(a1,r),[x3,y3]=pt(a0,r),lg=frac>.5?1:0;
+      d=`M${x0} ${y0}A${R} ${R} 0 ${lg} 1 ${x1} ${y1}L${x2} ${y2}A${r} ${r} 0 ${lg} 0 ${x3} ${y3}Z`}
+    paths+=`<path d="${d}" fill="${x.c}"><title>${esc(x.l)}: ${x.t||nf(x.v)} (${Math.round(frac*100)} %)</title></path>`;
+    a0=a1;
+  });
+  return `<svg class="donut" viewBox="0 0 220 220" role="img" aria-label="${esc(aria)}">${paths}<text x="110" y="${small?108:118}" text-anchor="middle" font-size="22" font-weight="800">${esc(big)}</text>${small?`<text x="110" y="130" text-anchor="middle" font-size="12" style="fill:var(--mute)">${esc(small)}</text>`:''}</svg>`;
+}
+function hbarsHTML(rows,series,fmtRow){
+  const max=Math.max(1,...rows.map(r=>r.vals.reduce((a,b)=>a+b,0)));
+  return rows.map(r=>`<div class="hrow"><div class="nm" title="${esc(r.name)}">${esc(r.name)}</div><div><div class="hb">${r.vals.map((v,i)=>v?`<i style="width:${(100*v/max).toFixed(2)}%;background:${series[i].c}" title="${esc(r.name)} · ${esc(series[i].l)}: ${v}"></i>`:'').join('')}</div><div class="hv">${fmtRow(r)}</div></div></div>`).join('');
+}
+function lineSVG(labels,series,aria){
+  const W=Math.max(290,Math.min(640,innerWidth-64)),H=250,L=44,Rr=12,T=12,B=34,n=labels.length;
+  const mx=Math.max(1,...series.flatMap(s=>s.vals));
+  const step=Math.pow(10,Math.floor(Math.log10(mx/4)));const nice=[1,2,2.5,5,10].map(k=>k*step).find(k=>mx/k<=5)||step*10;
+  const top=Math.ceil(mx/nice)*nice;
+  const X=i=>n<2?L+(W-L-Rr)/2:L+i*(W-L-Rr)/(n-1),Y=v=>T+(H-T-B)*(1-v/top);
+  let g='';
+  for(let v=0;v<=top+0.001;v+=nice){g+=`<line x1="${L}" x2="${W-Rr}" y1="${Y(v)}" y2="${Y(v)}" style="stroke:var(--grid)" stroke-width="1"/><text x="${L-6}" y="${Y(v)+4}" text-anchor="end">${nf(v)}</text>`}
+  const every=Math.ceil(n/Math.max(2,Math.floor((W-L)/62)));
+  labels.forEach((l,i)=>{if((i%every===0&&(n-1-i>=every*0.6||i===0))||i===n-1)g+=`<text x="${X(i)}" y="${H-12}" text-anchor="middle">${esc(l)}</text>`});
+  g+=`<line x1="${L}" x2="${W-Rr}" y1="${Y(0)}" y2="${Y(0)}" style="stroke:var(--mute)" stroke-width="1"/>`;
+  series.forEach(s=>{
+    g+=`<polyline fill="none" stroke="${s.c}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" points="${s.vals.map((v,i)=>X(i).toFixed(1)+','+Y(v).toFixed(1)).join(' ')}"/>`;
+    // viele Spieltage: nur der letzte Punkt sichtbar, die anderen unsichtbar (Tooltip bleibt), sonst verdecken die Punkte die Linie
+    s.vals.forEach((v,i)=>{const dot=n<=30||i===n-1;g+=`<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="${dot?4:3}" fill="${dot?s.c:'transparent'}" style="stroke:${dot?'var(--card)':'none'}" stroke-width="2"><title>${esc(s.name)} · ${esc(labels[i])}: ${nf(v)} Punkte</title></circle>`});
+  });
+  return `<svg class="linechart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(aria)}">${g}</svg>`;
+}
+/* ---------- Export / Import ---------- */
+const exportName=()=>'formel1-'+new Date().toISOString().slice(0,10)+'.json';
+/* Ablageordner für Import/Export (File System Access API: Chrome/Edge am PC). Sonst gilt der Download-Ordner des Browsers. */
+let dirHandle=null;
+function idb(){return new Promise((res,rej)=>{const r=indexedDB.open('f1-fs',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+async function idbPut(k,v){const db=await idb();return new Promise((res,rej)=>{const s=db.transaction('kv','readwrite').objectStore('kv');const q=v===undefined?s.delete(k):s.put(v,k);q.onsuccess=()=>res();q.onerror=()=>rej(q.error)})}
+async function idbGet(k){const db=await idb();return new Promise((res,rej)=>{const q=db.transaction('kv').objectStore('kv').get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}
+try{idbGet('dir').then(h=>{dirHandle=h||null}).catch(()=>{})}catch(e){}
+const canPickDir=()=>typeof window.showDirectoryPicker==='function'||!!(androidApp()&&typeof androidApp().pickFolder!=='undefined');
+const folderLabel=()=>androidApp()&&typeof androidApp().folderName!=='undefined'?androidApp().folderName():(dirHandle?dirHandle.name:'');
+window.onFolderChanged=()=>{toast(folderLabel()?'Ordner gewählt: '+folderLabel():'Kein Ordner gewählt');const m=document.getElementById('modal').innerHTML;if(m.includes('Daten importieren'))openImport();else if(m.trim())openSettings()};
+async function pickDir(){
+  if(androidApp()&&typeof androidApp().pickFolder!=='undefined'){androidApp().pickFolder();return} // Android: Ordnerauswahl des Systems
+  let h=null;
+  try{h=await window.showDirectoryPicker({mode:'readwrite',id:'f1'})}
+  catch(e){
+    if(e&&e.name==='AbortError')return; // Auswahl abgebrochen
+    const n=e&&e.name,m=e&&e.message||'';
+    if(n==='SecurityError'||/system files|contains|sicher|blocked/i.test(m))
+      toast('Diesen Ordner sperrt der Browser (z. B. „Dokumente“, „Downloads“ oder „Desktop“ selbst). Lege darin einen Unterordner an, z. B. „Formel1“, und wähle diesen.',9000);
+    else if(n==='NotAllowedError')
+      toast('Der Browser erlaubt den Ordnerzugriff hier nicht. Bitte in Chrome oder Edge am PC öffnen (nicht in einer eingebetteten Vorschau).',9000);
+    else toast('Ordner konnte nicht gewählt werden ('+(n||'Fehler')+(m?': '+m:'')+'). Dateien landen weiter im Download-Ordner.',9000);
+    return;
+  }
+  dirHandle=h;
+  try{await idbPut('dir',h)}catch(e){toast('Ordner „'+h.name+'“ gewählt, gilt aber nur bis zum Schließen der Seite (Browser kann ihn nicht dauerhaft merken).',7000)}
+  openSettings();
+}
+async function clearDir(){if(androidApp()&&typeof androidApp().clearFolder!=='undefined')androidApp().clearFolder();dirHandle=null;try{await idbPut('dir',undefined)}catch(e){}openSettings()}
+async function dirOk(){
+  if(!dirHandle)return false;
+  try{let p=await dirHandle.queryPermission({mode:'readwrite'});if(p!=='granted')p=await dirHandle.requestPermission({mode:'readwrite'});return p==='granted'}catch(e){return false}
+}
+function toast(t,ms){
+  const d=document.createElement('div');d.className='toast';d.textContent=t;d.onclick=()=>d.remove();document.body.appendChild(d);setTimeout(()=>d.remove(),ms||4000);
+}
+const androidApp=()=>typeof window.AndroidBridge!=='undefined'&&window.AndroidBridge; // läuft in der Android-App (WebView)
+async function exportData(){await saveText(exportName(),JSON.stringify(S,null,1),'application/json')} // alle Daten (Spiele, Saisons, Termine mit Verlauf)
+async function saveText(name,text,mime){ // Datei in den Ablageordner bzw. als Download speichern
+
+  if(androidApp()){androidApp().saveFile(name,text);return} // Android: Datei im Ordner „Downloads“
+  if(dirHandle&&await dirOk()){
+    try{const fh=await dirHandle.getFileHandle(name,{create:true});const w=await fh.createWritable();await w.write(text);await w.close();toast('Gespeichert in „'+dirHandle.name+'“: '+name);return}catch(e){}
+  }
+  const b=new Blob([text],{type:mime||'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click();
+  toast('Als Download gespeichert: '+name);
+}
+// Teilen-Dialog des Geräts (dort die WhatsApp-Gruppe wählen); Datei mit allen Daten wird angehängt
+async function shareAll(text){
+  const json=JSON.stringify(S,null,1);
+  if(androidApp()){androidApp().shareFile(exportName(),json,text);return} // Android: Teilen-Menü mit Datei und Text
+  try{
+    const file=new File([json],exportName(),{type:'application/json'});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'Formel-1-Daten',text});return}
+    if(navigator.share){await navigator.share({title:'Formel 1',text});exportData();return}
+  }catch(e){if(e&&e.name==='AbortError')return}
+  // Fallback (z. B. am PC): Datei speichern und WhatsApp mit dem Text öffnen, Datei dort anhängen
+  exportData();
+  window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank');
+}
+// Ergebnis per E-Mail: neue E-Mail mit allen Empfängern aus den Einstellungen, Betreff „Ergebnis Skatabend <Datum>“, Text mit den Verlusten und der Exportdatei im Anhang
+const b64=t=>btoa(unescape(encodeURIComponent(t)));
+const b64lines=t=>(b64(t).match(/.{1,76}/g)||[]).join('\r\n');
+function buildEml(to,subject,body,fname,json){
+  const bd='f1log_'+Date.now().toString(36);
+  return ['X-Unsent: 1','To: '+to.join(', '),'Subject: =?UTF-8?B?'+b64(subject)+'?=','MIME-Version: 1.0','Content-Type: multipart/mixed; boundary="'+bd+'"','',
+    '--'+bd,'Content-Type: text/plain; charset=utf-8','Content-Transfer-Encoding: base64','',b64lines(body),
+    '--'+bd,'Content-Type: application/json; name="'+fname+'"','Content-Transfer-Encoding: base64','Content-Disposition: attachment; filename="'+fname+'"','',b64lines(json),
+    '--'+bd+'--',''].join('\r\n');
+}
+const isIOS=()=>/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+// Web-Version auf dem Handy (iPhone/iPad/Android-Browser, nicht die APK): E-Mail ohne Anhang + Datei im Download-Ordner
+const isMobileWeb=()=>(isIOS()||/Android/i.test(navigator.userAgent))&&!androidApp();
+let _ml=null;
+// Empfängerfeld im E-Mail-Fenster: vorbelegt mit den Adressen aus den Einstellungen, vor dem Senden änderbar oder (falls keine hinterlegt sind) einzutragen
+const mailToField=o=>`<label>Empfänger (mit Komma trennen)</label><input type="text" id="mlTo" value="${esc(o.to.join(', '))}" placeholder="name@beispiel.de, name2@beispiel.de" autocomplete="off">${o.to.length?'':'<p class="muted">In den Einstellungen (⚙) sind für dieses Gerät noch keine E-Mail-Adressen hinterlegt. Trage sie hier ein oder dort bei jedem Namen.</p>'}`;
+function mailRecipients(o){const el=document.getElementById('mlTo');if(!el)return o.to;o.to=[...new Set(el.value.split(/[,;\s]+/).map(x=>x.trim()).filter(x=>/.@./.test(x)))];return o.to}
+const openMailto=u=>{location.href=u}; // eigene Funktion, damit sie sich testen lässt
+const mailtoUrl=(to,subject,body)=>'mailto:'+to.map(x=>x.replace(/[%?&#\s]/g,encodeURIComponent)).join(',')+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body).replace(/%0A/g,'%0D%0A');
+// Handy-Web: Eine Web-App kann keine E-Mail mit Anhang öffnen. Deshalb: Datei wird im Download-Ordner erzeugt, die E-Mail (Empfänger, Betreff, Text) ohne Anhang geöffnet; den Anhang hängt man selbst an.
+// PC-Browser mit Teilen-Dialog (Windows): zusätzlich der Weg MIT Anhang (Teilen → Mail), Empfänger und Betreff werden kopiert
+// Edge/Chrome verweigern das Teilen von .json-Dateien („NotAllowedError: Permission denied“), .txt ist erlaubt: Inhalt unverändert (JSON), nur die Endung .txt
+const shareFile=o=>new File([o.json],o.fname.replace(/\.json$/i,'.txt'),{type:'text/plain'});
+const canShareFile=o=>{try{return (!isMobileWeb()||isIOS())&&!!(navigator.canShare&&navigator.canShare({files:[shareFile(o)]}))}catch(e){return false}};
+// iPhone/iPad: Safari und Home-Bildschirm-Apps speichern keine Dateien in den Download-Ordner (der Download-Link tut nichts). Deshalb: Datei direkt über das Teilen-Menü an Mail anhängen; Empfänger werden kopiert.
+function mailDialogIOS(o){
+  _ml=o;
+  const sh=canShareFile(o);
+  showSheet(`<h1>E-Mail senden</h1>
+  <div class="banner orange" style="margin:8px 0"><b>iPhone / iPad:</b> Eine Web-App kann hier <b>keine Datei im Download-Ordner speichern</b> und keine E-Mail mit Anhang und Empfängern zugleich öffnen. Deshalb gibt es zwei Wege:</div>
+  ${sh?`<p><b>Weg 1 – mit Datei:</b> Das Teilen-Menü öffnet sich, dort <b>„Mail“</b> wählen. Die Datei <b>${esc(shareFile(o).name)}</b> hängt dann <b>schon an</b>, du musst keinen Ordner suchen. Die <b>Empfänger werden in die Zwischenablage kopiert</b> (in der E-Mail ins „An“-Feld einfügen), den Betreff „${esc(o.subject)}“ füllt Mail meist selbst.</p>
+  <button class="btn" onclick="mailShare()">📎 E-Mail mit Datei (Teilen-Menü → Mail)</button>`:'<p class="muted">Das Teilen von Dateien ist auf diesem Gerät nicht verfügbar.</p>'}
+  <p style="margin-top:16px"><b>${sh?'Weg 2':'Weg'} – nur Text, ohne Datei:</b> Es öffnet sich Mail mit <b>Empfängern, Betreff und Ergebnis-Text</b> (wer wie viel verloren hat). Die Datei hängt nicht an.</p>
+  <button class="btn${sh?' sec':''}" onclick="mailTextOnly()">✉ E-Mail ohne Datei erstellen</button>
+  <div style="margin-top:12px">${mailToField(o)}</div>
+  <div style="margin-top:10px"><button class="btn sec" onclick="closeModal()">Abbrechen</button></div>`);
+}
+function mailTextOnly(){const o=_ml;if(!o)return;mailRecipients(o);closeModal();setTimeout(()=>openMailto(mailtoUrl(o.to,o.subject,o.body)),300)}
+// Windows im Browser: Das Teilen-Fenster („Freigeben“) und mailto bieten nur das NEUE Outlook an. Der .eml-Entwurf öffnet dagegen das Programm, das für .eml-Dateien eingestellt ist (z. B. klassisches Outlook) und enthält Empfänger, Betreff, Text und Anhang.
+const isWindowsPC=()=>!isMobileWeb()&&/Windows/i.test(navigator.userAgent);
+function mailDialogWindows(o){
+  _ml=o;
+  showSheet(`<h1>E-Mail senden</h1>
+  <p>Die App speichert einen <b>fertigen E-Mail-Entwurf</b> (<b>${esc(o.emlName)}</b>) mit <b>Empfängern, Betreff, Text und Anhang</b>. Er öffnet sich in dem Programm, das bei Windows für <b>.eml-Dateien</b> eingestellt ist, nicht im Teilen-Fenster („Freigeben“) und nicht über den Mail-Link. So wird nicht das neue Outlook erzwungen.</p>
+  <ol><li>Auf <b>„Entwurf speichern“</b> klicken.</li>
+  <li>Im Download-Hinweis des Browsers auf <b>„Datei öffnen“</b> klicken. In Edge: beim Download ⋯ → <b>„Dateien dieses Typs immer öffnen“</b>, dann öffnet sich die E-Mail künftig von selbst.</li>
+  <li>Die E-Mail ist fertig: nur noch senden.</li></ol>
+  ${mailToField(o)}
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn" onclick="mailEml()">📨 Entwurf speichern (.eml)</button><button class="btn sec" onclick="closeModal()">Abbrechen</button></div>`);
+}
+function mailDialogMobile(o){
+  _ml=o;
+  if(isWindowsPC()){mailDialogWindows(o);return}
+  const ort=(typeof dirHandle!=='undefined'&&dirHandle)?'im Ordner „'+esc(dirHandle.name)+'“ (dein Ablageordner)':'im <b>Download-Ordner</b> deines Geräts';
+  const sh=canShareFile(o),pc=!isMobileWeb();
+  showSheet(`<h1>E-Mail senden</h1>
+  ${sh?`<p><b>Weg 1 – mit Anhang:</b> Der Teilen-Dialog von Windows öffnet sich, dort <b>„Mail“</b> wählen. Die Datei <b>${esc(shareFile(o).name)}</b> (Inhalt wie die .json-Datei, nur mit der Endung .txt, der Import nimmt sie an) hängt dann <b>schon an</b>. Die <b>Empfänger</b> werden in die Zwischenablage kopiert (in der E-Mail einfügen), den Betreff „${esc(o.subject)}“ übernimmt das Mailprogramm meist selbst.</p>
+  <button class="btn" onclick="mailShare()">📎 E-Mail mit Anhang (Teilen-Dialog → Mail)</button>`:''}
+  ${pc?`<p style="margin-top:16px"><b>${sh?'Weg 2':'Weg 1'} – fertiger Entwurf mit Anhang (.eml):</b> Speichert einen Entwurf mit <b>Empfängern, Betreff, Text und Anhang</b>. Ein Klick auf <b>„Datei öffnen“</b> im Download-Hinweis des Browsers öffnet ihn in dem Programm, das bei Windows für <b>.eml-Dateien</b> eingestellt ist (Edge: ⋯ beim Download → „Dateien dieses Typs immer öffnen“, dann geht es künftig von selbst).</p>
+  <button class="btn" onclick="mailEml()">📨 Entwurf mit Anhang speichern (.eml)</button>`:''}
+  ${pc?`<p style="margin-top:16px"><b>${sh?'Weg 3':'Weg 2'} – ohne Anhang:</b></p>`:''}
+  <div class="banner orange" style="margin:8px 0"><b>Bitte beachten:</b> Die E-Mail wird <b>ohne Anhang</b> erstellt. Den Anhang hängst du <b>selbst an</b>.</div>
+  <ol><li>Die Datei <b>${esc(o.fname)}</b> wird ${ort} gespeichert.</li>
+  <li>Danach öffnet sich dein Mailprogramm mit einer neuen E-Mail mit <b>Empfängern</b>, <b>Betreff</b> („${esc(o.subject)}“) und <b>Text</b> (wer wie viel verloren hat).</li>
+  <li>In der E-Mail die <b>Büroklammer</b> bzw. „Anhang hinzufügen“ wählen → <b>Download-Ordner</b> → <b>${esc(o.fname)}</b> auswählen und senden.</li></ol>
+  ${mailToField(o)}
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn${sh?' sec':''}" onclick="mailMobileGo()">✉ E-Mail erstellen und Datei speichern</button><button class="btn sec" onclick="closeModal()">Abbrechen</button></div>`);
+}
+async function mailEml(){
+  const o=_ml;if(!o)return;mailRecipients(o);
+  // immer ein echter Browser-Download (nicht in den gewählten Ablageordner schreiben), sonst erscheint kein Download-Hinweis
+  const b=new Blob([buildEml(o.to,o.subject,o.body,o.fname,o.json)],{type:'message/rfc822'});
+  const u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=o.emlName;a.style.display='none';document.body.appendChild(a);a.click();
+  setTimeout(()=>{a.remove();URL.revokeObjectURL(u)},60000);
+  showSheet(`<h1>Entwurf gespeichert</h1>
+  <p>Die Datei <b>${esc(o.emlName)}</b> wurde heruntergeladen (Ordner <b>Downloads</b>). So öffnest du die fertige E-Mail:</p>
+  <ol><li>Im Browser oben rechts den <b>Download-Hinweis</b> öffnen und auf <b>„Datei öffnen“</b> klicken, oder</li>
+  <li>kommt kein Hinweis: <b>Strg + J</b> drücken (Download-Liste) und auf die Datei klicken, oder im Explorer den Ordner <b>Downloads</b> öffnen und die Datei <b>doppelklicken</b>.</li></ol>
+  <p class="muted">Empfänger: ${o.to.length?esc(o.to.join(', ')):'keine'} · Die E-Mail enthält Betreff, Text und die Datendatei als Anhang.</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn" onclick="mailEml()">Nochmal speichern</button><button class="btn sec" onclick="closeModal()">Schließen</button></div>`);
+}
+async function mailShare(){
+  const o=_ml;if(!o)return;mailRecipients(o);
+  try{
+    const file=shareFile(o);
+    try{navigator.clipboard.writeText(o.to.join(', ')).then(()=>toast('Empfänger in die Zwischenablage kopiert – in der E-Mail einfügen.',6000)).catch(()=>{})}catch(e){}
+    await navigator.share({files:[file],title:o.subject,text:o.subject+String.fromCharCode(10,10)+o.body});
+  }catch(e){
+    if(e&&e.name==='AbortError')return; // abgebrochen
+    toast('Teilen mit Anhang ist hier nicht möglich ('+(e&&e.name?e.name+': ':'')+(e&&e.message||'')+'). Bitte „E-Mail erstellen und Datei speichern“ nutzen.',9000);
+  }
+}
+async function mailMobileGo(){
+  const o=_ml;if(!o)return;mailRecipients(o);
+  await saveText(o.fname,o.json,'application/json'); // Datei im Download-Ordner
+  closeModal();
+  setTimeout(()=>openMailto(mailtoUrl(o.to,o.subject,o.body+String.fromCharCode(10,10)+'Anhang: '+o.fname)),900);
+}
+// Alle Daten als Text in die Zwischenablage kopieren (z. B. in eine E-Mail oder Notiz einfügen; zurück per Import → „Inhalt einfügen“)
+async function copyData(){
+  const json=JSON.stringify(S,null,1);
+  try{await navigator.clipboard.writeText(json);toast('Alle Daten kopiert ('+Math.round(json.length/1024)+' KB). In E-Mail oder Notiz einfügen; zurück über Import → „Inhalt einfügen“.',7000)}
+  catch(e){toast('Kopieren nicht möglich (Zugriff auf die Zwischenablage verweigert).',5000)}
+}
+function sendTextWhatsApp(text){if(androidApp()){androidApp().shareText(text);return}window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank')}
+function openExport(){
+  showSheet(`<h1>Export / Senden</h1><p class="muted">Enthält alle Daten: alle Saisons, alle Spieltage, den laufenden Spieltag sowie alle Termine mit ihrem Änderungsverlauf.</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0"><button class="btn" onclick="waDialog({title:'Nachricht mit den Zahlungen',text:lastSummary(),name:exportName(),content:JSON.stringify(S,null,1),mime:'application/json'})">💬 An WhatsApp senden (Text + Datei)</button>
+  <button class="btn" onclick="mailResult()" title="Neue E-Mail mit allen Empfängern aus den Einstellungen, Ergebnis-Text und Datei">✉ Per E-Mail senden</button>${androidApp()?'':'<button class="btn sec" onclick="copyData()" title="Alle Daten als Text in die Zwischenablage">📋 Datei-Inhalt kopieren</button>'}</div>
+  <label>Vorschau des Textes</label><pre style="white-space:pre-wrap;background:var(--chip);padding:10px;border-radius:8px;font:13px/1.4 inherit">${esc(lastSummary())}</pre>
+  <button class="btn sec" onclick="closeModal()">Schließen</button>`);
+}
+// Import-Dialog mit „Zurück“; auf Android zusätzlich Liste der gesicherten Dateien (ohne System-Dateiauswahl)
+let _bk=[];
+function openImport(){
+  const A=androidApp();_bk=[];
+  if(A&&A.listBackups){try{_bk=JSON.parse(A.listBackups())}catch(e){_bk=[]}}
+  const fmt=n=>n>1024?Math.round(n/1024)+' KB':n+' B';
+  showSheet(`<h1>Daten importieren</h1>
+  <p class="muted">Ersetzt <b>alle</b> Daten dieser App durch den Inhalt einer Formel-1-Datei (.json). Sichere vorher mit „Export / Senden“.</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0"><button class="btn sec" onclick="closeModal()">← Zurück</button>${!A&&typeof window.showOpenFilePicker!=='function'?`<label class="btn" style="cursor:pointer">📂 Datei wählen …<input type="file" accept=".json,application/json,text/plain" style="display:none" onchange="importFile(this)"></label>`:`<button class="btn" onclick="importData()">📂 ${A?'Dateiauswahl des Geräts':'Datei wählen'} …</button>`}${A?'<button class="btn sec" onclick="pickDir()">📁 Ordner wählen …</button>':''}</div>
+  ${A?(_bk.length?`<label>Gesicherte Dateien ${folderLabel()?'im Ordner „'+esc(folderLabel())+'“':'in Downloads/F1Log'} (antippen zum Laden)</label>`+_bk.map((f,i)=>`<div class="hit" onclick="importBackup(${i})"><b>${esc(f.name)}</b> <span class="muted">· ${fmt(f.size)}${f.date?' · '+esc(f.date):''}</span></div>`).join(''):`<p class="muted">${folderLabel()?'Im Ordner „'+esc(folderLabel())+'“ liegen keine .json-Dateien.':'Im Standardordner liegen noch keine gesicherten Dateien.'} Wähle über „📁 Ordner wählen“ den Ordner mit deinen Sicherungen.</p>`):''}
+  <details style="margin-top:8px"><summary>Ohne Dateiauswahl: Inhalt einfügen</summary>
+  <p class="muted">Kopiere den Inhalt der Formel-1-Datei (z. B. aus einer Nachricht) und füge ihn hier ein.</p>
+  <textarea id="pasteBox" rows="5" style="width:100%;font:13px monospace;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px" placeholder='{"started":…}'></textarea>
+  <button class="btn" style="margin-top:6px" onclick="loadImport(document.getElementById('pasteBox').value)">Einfügen und laden</button></details>
+  <div style="margin-top:12px"><button class="btn sec" onclick="closeModal()">← Zurück</button></div>
+  <p class="muted">Aus der Datei- oder Ordnerauswahl des Geräts kommst du mit der Zurück-Taste (oder Geste) wieder hierher, oft ist sie zweimal nötig. Bei „Ordner wählen“ den Ordner antippen und unten „AUSWÄHLEN“ drücken.</p>`);
+}
+function importBackup(i){
+  const A=androidApp();if(!A||!_bk[i])return;
+  try{loadImport(A.readBackup(_bk[i].id))}catch(e){toast('Datei konnte nicht gelesen werden')}
+}
+async function importData(){
+  if(dirHandle&&typeof window.showOpenFilePicker==='function'&&await dirOk()){
+    try{
+      const [fh]=await window.showOpenFilePicker({startIn:dirHandle,types:[{description:'Formel-1-Daten',accept:{'application/json':['.json'],'text/plain':['.txt']}}]});
+      loadImport(await (await fh.getFile()).text());return;
+    }catch(e){if(e&&e.name==='AbortError')return}
+  }
+  // Das Feld muss im Dokument hängen, sonst feuert iOS-Safari (auch die installierte Web-App) kein change-Ereignis
+  const i=document.createElement('input');i.type='file';i.accept='.json,application/json,text/plain';
+  i.style.cssText='position:fixed;left:-9999px;top:0;opacity:0';
+  document.body.appendChild(i);
+  i.addEventListener('change',()=>{importFile(i);setTimeout(()=>i.remove(),0)});
+  i.click();
+}
+function importFile(inp){
+  const f=inp.files&&inp.files[0];
+  if(!f){toast('Keine Datei gewählt');return}
+  const r=new FileReader();
+  r.onload=()=>loadImport(r.result);
+  r.onerror=()=>toast('Datei konnte nicht gelesen werden');
+  r.readAsText(f);
+}
+// Import ersetzt ALLES: erst prüfen, dann Warnung mit Bestätigung (Häkchen + Knopf), erst danach wird übernommen
+let _pendingImport=null;
+// Testdaten: index.html#demo62 füllt den laufenden Spieltag mit 62 zufälligen Spielen (ersetzt den laufenden Spieltag!)
+/* ---------- Termine ---------- */
+const pad2=n=>String(n).padStart(2,'0');
+const ymd=d=>d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());
+const ymdParse=s=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||'');return m?new Date(+m[1],+m[2]-1,+m[3]):null};
+const WD=['So','Mo','Di','Mi','Do','Fr','Sa'],WDL=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+const MONTHS=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+const dayLabel=s=>{const d=ymdParse(s);return d?WD[d.getDay()]+', '+pad2(d.getDate())+'.'+pad2(d.getMonth()+1)+'.'+d.getFullYear():(s||'–')};
+// Datum aus Eingabe wie 24.10.2026, 24.10.26, 24.10. (aktuelles Jahr) oder 2026-10-24; sonst null
+function parseDate(txt){
+  const t=String(txt||'').trim();let y,m,d,x;
+  if((x=/^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(t))){y=+x[1];m=+x[2];d=+x[3]}
+  else if((x=/^(\d{1,2})\.\s*(\d{1,2})\.?\s*(\d{2}|\d{4})?$/.exec(t))){d=+x[1];m=+x[2];y=x[3]?(+x[3]<100?2000+ +x[3]:+x[3]):new Date().getFullYear()}
+  else return null;
+  const dt=new Date(y,m-1,d);if(dt.getFullYear()!==y||dt.getMonth()!==m-1||dt.getDate()!==d)return null;
+  return ymd(dt);
+}
+const addDays=(s,k)=>{const d=ymdParse(s);return ymd(new Date(d.getFullYear(),d.getMonth(),d.getDate()+k))};
+const fmtDE=s=>{const d=ymdParse(s);return d?pad2(d.getDate())+'.'+pad2(d.getMonth()+1)+'.'+d.getFullYear():''};
+// Feiertage (Deutschland): bundesweit und regional (nicht in jedem Bundesland), Ostern nach Gauß/Anonymous-Gregorian
+const _hol={};
+function easter(y){const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*m+114)/31),da=((h+l-7*m+114)%31)+1;return new Date(y,mo-1,da)}
+function holidays(y){
+  if(_hol[y])return _hol[y];
+  const H={},E=easter(y),add=(d,n,reg)=>{H[ymd(d)]={n,reg:!!reg}},off=k=>new Date(y,E.getMonth(),E.getDate()+k);
+  add(new Date(y,0,1),'Neujahr');add(off(-2),'Karfreitag');add(off(0),'Ostersonntag');add(off(1),'Ostermontag');add(new Date(y,4,1),'Tag der Arbeit');
+  add(off(39),'Christi Himmelfahrt');add(off(49),'Pfingstsonntag');add(off(50),'Pfingstmontag');add(new Date(y,9,3),'Tag der Deutschen Einheit');
+  add(new Date(y,11,25),'1. Weihnachtstag');add(new Date(y,11,26),'2. Weihnachtstag');
+  add(new Date(y,0,6),'Heilige Drei Könige',1);add(off(60),'Fronleichnam',1);add(new Date(y,7,15),'Mariä Himmelfahrt',1);add(new Date(y,9,31),'Reformationstag',1);add(new Date(y,10,1),'Allerheiligen',1);
+  const n23=new Date(y,10,23);add(new Date(y,10,23-((n23.getDay()+7-3)%7||7)),'Buß- und Bettag',1); // Mittwoch vor dem 23.11.
+  return _hol[y]=H;
+}
+const holidayOf=s=>{const d=ymdParse(s);return d?holidays(d.getFullYear())[s]||null:null};
+function apptEnsure(){S.appts=Array.isArray(S.appts)?S.appts:[];S.apptLog=Array.isArray(S.apptLog)?S.apptLog:[]}
+apptEnsure();
+const REMINDERS=[[0,'keine'],[15,'15 Minuten vorher'],[60,'1 Stunde vorher'],[180,'3 Stunden vorher'],[1440,'1 Tag vorher'],[2880,'2 Tage vorher']];
+const REPEATS=[['none','einmalig'],['weekly','jede Woche'],['biweekly','alle 2 Wochen'],['monthly','jeden Monat']];
+const remText=m=>(REMINDERS.find(r=>r[0]===+m)||[0,'keine'])[1];
+const repText=a=>a.repeat&&a.repeat!=='none'?(REPEATS.find(r=>r[0]===a.repeat)||[0,''])[1]+', '+(a.count||1)+' Termine':'einmalig';
+const timeText=a=>a.allDay?'ganztägig':(a.start||'')+(a.end?' – '+a.end+' Uhr':' Uhr');
+// alle Termin-Tage einer (wiederholten) Serie
+function occurrences(a){
+  const d0=ymdParse(a.date);if(!d0)return[];
+  const n=a.repeat&&a.repeat!=='none'?Math.max(1,Math.min(+a.count||1,200)):1,out=[];
+  for(let i=0;i<n;i++){
+    const d=new Date(d0);
+    if(a.repeat==='weekly')d.setDate(d0.getDate()+7*i);else if(a.repeat==='biweekly')d.setDate(d0.getDate()+14*i);
+    else if(a.repeat==='monthly'){d.setMonth(d0.getMonth()+i,1);const last=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();d.setDate(Math.min(d0.getDate(),last))}
+    out.push(ymd(d));
+  }
+  return out;
+}
+const apptOn=s=>S.appts.filter(a=>occurrences(a).includes(s));
+const apptSort=(a,b)=>(a.date+(a.allDay?'00:00':a.start||'')).localeCompare(b.date+(b.allDay?'00:00':b.start||''));
+// nächstes Datum einer Serie ab heute (für die Liste)
+function nextOcc(a,today){return occurrences(a).find(d=>d>=today)||null}
+const todayStr=()=>ymd(new Date());
+
+/* --- Verlauf --- */
+const APPT_FIELDS=[['title','Titel',a=>a.title],['date','Datum',a=>dayLabel(a.date)],['start','Beginn',a=>a.allDay?'ganztägig':a.start||'–'],['end','Ende',a=>a.allDay?'–':a.end||'–'],['allDay','Ganztägig',a=>a.allDay?'ja':'nein'],['place','Ort',a=>a.place||'–'],['who','Teilnehmer',a=>(a.who||[]).join(', ')||'–'],['notes','Notizen',a=>a.notes||'–'],['remind','Erinnerung',a=>remText(a.remind)],['repeat','Wiederholung',a=>repText(a)],['count','Anzahl',a=>String(a.count||1)],['tentative','Status',a=>a.tentative?'vorläufig':'fest']];
+function apptDiff(o,n){
+  const ch=[];
+  APPT_FIELDS.forEach(([k,l,f])=>{const x=JSON.stringify(o[k]??''),y=JSON.stringify(n[k]??'');if(x!==y){
+    if(k==='start'&&o.allDay!==n.allDay)return; // Beginn/Ende ergeben sich aus „Ganztägig“
+    if(k==='end'&&o.allDay!==n.allDay)return;
+    if(k==='count'&&o.repeat==='none'&&n.repeat==='none')return;
+    ch.push({f:l,from:f(o),to:f(n)})}});
+  return ch;
+}
+function apptLogAdd(a,action,changes){
+  S.apptLog.push({t:new Date().toISOString(),id:a.id,title:a.title,a:action,changes:changes||[],snap:action==='gelöscht'||action==='angelegt'?JSON.parse(JSON.stringify(a)):undefined});
+}
+
+/* --- Kalender-Datei (.ics, funktioniert in Android, iOS/iPhone und Windows/Outlook) --- */
+const icsEsc=s=>String(s==null?'':s).replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\r?\n/g,'\\n');
+function icsFold(line){
+  const enc=new TextEncoder();let out='',cur='',len=0;
+  for(const ch of line){const b=enc.encode(ch).length;if(len+b>73){out+=cur+'\r\n ';cur='';len=1}cur+=ch;len+=b}
+  return out+cur;
+}
+const icsDT=(date,time)=>date.replace(/-/g,'')+'T'+(time||'00:00').replace(':','')+'00';
+function icsEvent(a,stamp){
+  const L=['BEGIN:VEVENT','UID:'+a.id+'@f1log.local','DTSTAMP:'+stamp,'SEQUENCE:'+(a.seq||0),'SUMMARY:'+icsEsc(a.title||'Formel-1-Abend')];
+  if(a.allDay){const d=ymdParse(a.date),n=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1);L.push('DTSTART;VALUE=DATE:'+a.date.replace(/-/g,''),'DTEND;VALUE=DATE:'+ymd(n).replace(/-/g,''))}
+  else{
+    let endDate=a.date;const st=a.start||'19:00',en=a.end||'';
+    if(!en){const [h,m]=st.split(':').map(Number);const e=new Date(2000,0,1,h+3,m);endDate=e.getDate()>1?addDays(a.date,1):a.date;L.push('DTSTART:'+icsDT(a.date,st),'DTEND:'+icsDT(endDate,pad2(e.getHours())+':'+pad2(e.getMinutes())))}
+    else{if(en<=st)endDate=addDays(a.date,1);L.push('DTSTART:'+icsDT(a.date,st),'DTEND:'+icsDT(endDate,en))}
+  }
+  if(a.place)L.push('LOCATION:'+icsEsc(a.place));
+  const desc=[a.notes||'',(a.who&&a.who.length?'Mitspieler: '+a.who.join(', '):'')].filter(Boolean).join('\n');
+  if(desc)L.push('DESCRIPTION:'+icsEsc(desc));
+  L.push('STATUS:'+(a.tentative?'TENTATIVE':'CONFIRMED'),'TRANSP:OPAQUE','CATEGORIES:Formel 1');
+  if(a.repeat&&a.repeat!=='none'){const f=a.repeat==='monthly'?'FREQ=MONTHLY;INTERVAL=1':a.repeat==='biweekly'?'FREQ=WEEKLY;INTERVAL=2':'FREQ=WEEKLY;INTERVAL=1';L.push('RRULE:'+f+';COUNT='+Math.max(1,+a.count||1))}
+  if(+a.remind>0)L.push('BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:'+icsEsc(a.title||'Formel-1-Abend'),'TRIGGER:-PT'+(+a.remind)+'M','END:VALARM');
+  L.push('END:VEVENT');return L;
+}
+function buildIcs(list){
+  const stamp=new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d+/,'');
+  const L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//F1-Log//Termine//DE','CALSCALE:GREGORIAN','METHOD:PUBLISH','X-WR-CALNAME:Formel-1-Termine'];
+  list.forEach(a=>L.push(...icsEvent(a,stamp)));L.push('END:VCALENDAR');
+  return L.map(icsFold).join('\r\n')+'\r\n';
+}
+function apptText(a){
+  const occ=occurrences(a);
+  return '🏎 Formel-1-Termin: '+(a.title||'Formel-1-Abend')+'\n'+dayLabel(a.date)+' · '+timeText(a)+(a.place?'\nOrt: '+a.place:'')+(a.who&&a.who.length?'\nMitspieler: '+a.who.join(', '):'')+(occ.length>1?'\nWiederholung: '+repText(a):'')+(a.notes?'\n'+a.notes:'')+(a.tentative?'\n(vorläufig)':'');
+}
+// mode: 'cal' = in den Kalender des Geräts übernehmen, 'save' = Datei speichern, 'share' = Einladung teilen
+async function icsOut(name,text,mode,msg){
+  const A=androidApp();
+  if(A){
+    if(mode==='cal'&&typeof A.openCalendar!=='undefined'){A.openCalendar(name,text);return}
+    if(mode==='share'){A.shareFile(name,text,msg||'');return}
+    A.saveFile(name,text);return;
+  }
+  let file=null;try{file=new File([text],name,{type:'text/calendar'})}catch(e){}
+  if((mode==='cal'||mode==='share')&&file&&navigator.canShare&&navigator.canShare({files:[file]})){
+    try{await navigator.share(mode==='share'?{files:[file],title:'Formel-1-Termin',text:msg||''}:{files:[file],title:'Formel-1-Termin'});return}catch(e){if(e&&e.name==='AbortError')return}
+  }
+  if(mode==='share'&&msg&&!(file&&navigator.canShare)){sendTextWhatsApp(msg)}
+  await saveText(name,text,'text/calendar');
+  if(mode==='cal')toast('Datei gespeichert: '+name+' – zum Eintragen im Kalender öffnen (Doppelklick bzw. antippen).',7000);
+}
+const apptFile=a=>'f1-termin-'+a.date+'.ics';
+function exportAppt(id,mode){const a=S.appts.find(x=>x.id===id);if(!a)return;icsOut(apptFile(a),buildIcs([a]),mode,apptText(a))}
+function waAppt(id){
+  const t=todayStr(),list=id?S.appts.filter(a=>a.id===id):S.appts.filter(a=>occurrences(a).some(d=>d>=t)).sort(apptSort);
+  if(!list.length){toast('Keine kommenden Termine vorhanden');return}
+  waDialog({title:'Einladung',text:list.map(apptText).join('\n\n'),name:id?apptFile(list[0]):'f1-termine.ics',content:buildIcs(list),mime:'text/calendar'});
+}
+function exportAllAppts(mode){
+  const t=todayStr(),list=S.appts.filter(a=>occurrences(a).some(d=>d>=t)).sort(apptSort);
+  if(!list.length){toast('Keine kommenden Termine vorhanden');return}
+  icsOut('f1-termine.ics',buildIcs(list),mode,list.map(apptText).join('\n\n'));
+}
+
+/* --- Anzeige: Terminliste --- */
+const apptHead=()=>`<div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0"><button class="btn" onclick="openApptForm(null)">＋ Neuer Termin</button><button class="btn sec" onclick="openApptLog()">🕘 Verlauf</button></div>`;
+function apptCard(a,past){
+  const t=todayStr(),nx=past?a.date:(nextOcc(a,t)||a.date),h=holidayOf(nx),ser=occurrences(a).length>1;
+  return `<div class="appt ${past?'past':''}"><div class="ad"><b>${esc(dayLabel(nx))}</b> · ${esc(timeText(a))}${a.tentative?' <span class="chip">vorläufig</span>':''}${h?` <span class="chip hol">${esc(h.n)}</span>`:''}</div>
+  <div class="at">${esc(a.title||'Formel-1-Abend')}</div>
+  <div class="muted">${a.place?'📍 '+esc(a.place)+' · ':''}${a.who&&a.who.length?'👥 '+esc(a.who.join(', '))+' · ':''}${ser?'↻ '+esc(repText(a))+' (ab '+esc(fmtDE(a.date))+') · ':''}${+a.remind?'🔔 '+esc(remText(a.remind)):''}</div>
+  ${a.notes?`<div class="muted">${esc(a.notes)}</div>`:''}
+  <div class="arow"><button class="btn sec" onclick="openApptForm('${a.id}')">✏ Ändern / verschieben</button><button class="btn sec" onclick="openApptExport('${a.id}')">📅 Kalender</button><button class="btn sec" onclick="openApptLog('${a.id}')">🕘</button><button class="btn sec" onclick="delAppt('${a.id}')">🗑</button></div></div>`;
+}
+function openAppts(){
+  apptEnsure();
+  const t=todayStr(),up=S.appts.filter(a=>occurrences(a).some(d=>d>=t)).sort((a,b)=>(nextOcc(a,t)+(a.start||'')).localeCompare(nextOcc(b,t)+(b.start||''))),
+    past=S.appts.filter(a=>!occurrences(a).some(d=>d>=t)).sort((a,b)=>apptSort(b,a));
+  showSheet(`<h1>📅 Termine</h1><p class="muted">Geplante Spieltermine. Jeder Termin lässt sich als Kalender-Datei (.ics) in den Kalender von Android, iPhone/iPad oder Windows übernehmen. Änderungen werden im Verlauf festgehalten.</p>
+  ${apptHead()}
+  ${up.length?`<h3>Kommende Termine (${up.length})</h3>`+up.map(a=>apptCard(a,false)).join(''):'<div class="banner">Noch kein kommender Termin. Mit „＋ Neuer Termin“ legst du einen an.</div>'}
+  ${up.length?`<div style="margin:8px 0"><button class="btn sec" onclick="openApptExport()">📅 Alle kommenden Termine in den Kalender …</button></div>`:''}
+  ${past.length?`<details style="margin-top:10px"><summary>Vergangene Termine (${past.length})</summary>${past.map(a=>apptCard(a,true)).join('')}</details>`:''}
+  <div style="margin-top:12px"><button class="btn sec" onclick="closeModal()">Schließen</button></div>`);
+}
+function openApptExport(id){
+  const one=id?S.appts.find(a=>a.id===id):null;
+  const fn=id?`'${id}'`:'';
+  showSheet(`<h1>📅 ${one?'In den Kalender':'Alle Termine in den Kalender'}</h1>
+  <p class="muted">${one?esc(one.title||'Formel-1-Abend')+' · '+esc(dayLabel(one.date))+' · '+esc(timeText(one)):'Alle kommenden Termine in einer Datei.'}</p>
+  <div style="display:flex;flex-direction:column;gap:8px;margin:8px 0">
+  <button class="btn" onclick="${id?`exportAppt(${fn},'cal')`:`exportAllAppts('cal')`}">📅 In Kalender übernehmen</button>
+  <button class="btn" onclick="${id?`waAppt('${id}')`:`waAppt()`}">💬 Einladung an WhatsApp senden (Text + Datei)</button>
+  <button class="btn sec" onclick="${id?`exportAppt(${fn},'share')`:`exportAllAppts('share')`}">✉ Einladung senden (Mail, andere Apps …)</button>
+  <button class="btn sec" onclick="${id?`exportAppt(${fn},'save')`:`exportAllAppts('save')`}">💾 Nur Datei speichern (.ics)</button></div>
+  <p class="muted"><b>Android:</b> „In Kalender übernehmen“ öffnet die Kalender-App. <b>iPhone/iPad:</b> die .ics-Datei antippen und „Zum Kalender hinzufügen“ wählen (Teilen-Menü, Dateien oder Mail). <b>Windows:</b> die Datei doppelklicken, sie öffnet sich im Kalender (Outlook) und wird dort gespeichert. Wird ein Termin später geändert und die Datei erneut geöffnet, aktualisiert der Kalender den vorhandenen Eintrag.</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sec" onclick="openAppts()">← Zurück zu den Terminen</button></div>`);
+}
+function delAppt(id){
+  const a=S.appts.find(x=>x.id===id);if(!a)return;
+  ask('Termin „'+esc(a.title||'Formel-1-Abend')+'“ am '+esc(dayLabel(a.date))+' löschen? Er bleibt im Verlauf sichtbar.','Ja, Termin löschen',()=>{
+    S.appts=S.appts.filter(x=>x.id!==id);apptLogAdd(a,'gelöscht',[]);save();openAppts();toast('Termin gelöscht (im Verlauf nachlesbar)');
+  });
+}
+
+/* --- Formular mit Kalender --- */
+let AF=null;
+function newApptId(){return 'a'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function nextSaturday(){const d=new Date();d.setDate(d.getDate()+((6-d.getDay()+7)%7||7));return ymd(d)}
+function openApptForm(id){
+  const a=id?S.appts.find(x=>x.id===id):null;
+  const last=S.appts.length?S.appts[S.appts.length-1]:null;
+  // neuer Termin: alle Mitspieler angewählt, Beginn 17:00, Ort wie beim letzten Termin
+  const all=[...new Set(S.season.players)].filter(n=>S.nameList.includes(n));
+  AF=a?JSON.parse(JSON.stringify(a)):{id:null,title:'Formel-1-Abend',date:nextSaturday(),start:'17:00',end:'23:00',allDay:false,place:last?last.place||'':'',who:all,notes:'',remind:60,repeat:'none',count:10,tentative:false};
+  if(AF.allDay){AF.allDay=false;AF.start=AF.start||'17:00';AF.end=AF.end||'23:00'} // „Ganztägig“ gibt es im Formular nicht mehr
+  AF.who=AF.who||[];AF._orig=a?JSON.parse(JSON.stringify(a)):null;
+  const d=ymdParse(AF.date)||new Date();AF._y=d.getFullYear();AF._m=d.getMonth();
+  drawApptForm();
+}
+function drawApptForm(){
+  const a=AF,names=AF._names=[...new Set([...(S.nameList||[]),...(AF.who||[])])];
+  showSheet(`<h1>${a._orig?'Termin ändern / verschieben':'Neuer Termin'}</h1>
+  <label>Titel</label><input type="text" id="afTitle" value="${esc(a.title)}" oninput="AF.title=this.value">
+  <label>Datum</label>
+  <div class="row2"><input type="text" id="afDate" inputmode="numeric" placeholder="TT.MM.JJJJ" value="${esc(fmtDE(a.date))}" oninput="apptDateTyped(this.value)"><div class="datelab" id="afDay">${esc(dayLabelHol(a.date))}</div></div>
+  <div id="calBox">${calHTML()}</div>
+  ${`<div class="row2"><div><label>Beginn</label><input type="time" id="afStart" value="${esc(a.start||'')}" oninput="AF.start=this.value"></div><div><label>Ende</label><input type="time" id="afEnd" value="${esc(a.end||'')}" oninput="AF.end=this.value"></div></div><div class="muted">Liegt das Ende vor dem Beginn, endet der Termin am nächsten Tag.</div>`}
+  <label>Ort</label>${(()=>{const opts=names.map(n=>'bei '+n),custom=!!a.place&&!opts.includes(a.place);
+    return `<select id="afPlaceSel" onchange="apptPlace(this.value)"><option value="">– kein Ort –</option>${opts.map(o=>`<option value="${esc(o)}" ${a.place===o?'selected':''}>${esc(o)}</option>`).join('')}<option value="__new" ${custom?'selected':''}>Anderer Ort …</option></select><input type="text" id="afPlace" style="margin-top:6px;${custom?'':'display:none'}" value="${custom?esc(a.place):''}" placeholder="Anderer Ort, z. B. Gasthaus Krone" oninput="AF.place=this.value">`})()}
+  <label>Mitspieler</label>
+  <div class="whobox">${names.map((n,i)=>`<label class="chk"><input type="checkbox" ${a.who.includes(n)?'checked':''} onchange="apptWho(${i},this.checked)"> ${esc(n)}</label>`).join('')}</div>
+  <div class="row2"><input type="text" id="afWho" placeholder="Weiterer Name" style="min-width:0"><button class="btn sec" onclick="apptAddWho()">＋ Hinzufügen</button></div>
+  <div class="row2"><div><label>Erinnerung</label><select onchange="AF.remind=+this.value">${REMINDERS.map(r=>`<option value="${r[0]}" ${+a.remind===r[0]?'selected':''}>${r[1]}</option>`).join('')}</select></div>
+  <div><label>Wiederholung</label><select onchange="AF.repeat=this.value;drawApptForm()">${REPEATS.map(r=>`<option value="${r[0]}" ${a.repeat===r[0]?'selected':''}>${r[1]}</option>`).join('')}</select></div></div>
+  ${a.repeat&&a.repeat!=='none'?`<label>Anzahl der Termine (mit dem ersten)</label><input type="number" min="2" max="200" value="${a.count||10}" oninput="AF.count=Math.max(2,Math.min(200,+this.value||2))">`:''}
+  <label class="chk"><input type="checkbox" ${a.tentative?'checked':''} onchange="AF.tentative=this.checked"> Vorläufig (noch nicht fest)</label>
+  <label>Notizen</label><textarea id="afNotes" rows="3" oninput="AF.notes=this.value">${esc(a.notes)}</textarea>
+  <div id="afMsg" class="banner orange" style="display:none"></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0"><button class="btn" onclick="saveAppt()">💾 ${a._orig?'Änderung speichern':'Termin speichern'}</button><button class="btn sec" onclick="openAppts()">Abbrechen</button></div>`);
+}
+const dayLabelHol=s=>{const h=holidayOf(s);return s?dayLabel(s)+(h?' · '+h.n+(h.reg?' (regional)':''):''):'Datum ungültig'};
+function apptDateTyped(v){
+  const s=parseDate(v);
+  AF._bad=!s;
+  if(s){AF.date=s;const d=ymdParse(s);AF._y=d.getFullYear();AF._m=d.getMonth();document.getElementById('calBox').innerHTML=calHTML()}
+  document.getElementById('afDay').textContent=s?dayLabelHol(s):'Datum ungültig';
+}
+function apptPlace(v){
+  const el=document.getElementById('afPlace');
+  if(v==='__new'){AF.place=el.value;el.style.display='';el.focus()}
+  else{AF.place=v;el.style.display='none'}
+}
+function apptWho(k,on){const n=AF._names[k],w=AF.who,i=w.indexOf(n);if(on&&i<0)w.push(n);if(!on&&i>=0)w.splice(i,1)}
+function apptAddWho(){const el=document.getElementById('afWho'),n=(el.value||'').trim();if(!n)return;if(!AF.who.includes(n))AF.who.push(n);if(!S.nameList.includes(n)){S.nameList.push(n);save()}drawApptForm()}
+function calHTML(){
+  const y=AF._y,m=AF._m,first=new Date(y,m,1),lead=(first.getDay()+6)%7,days=new Date(y,m+1,0).getDate(),t=todayStr(),H=holidays(y);
+  const hm=[];
+  let cells='';
+  for(let i=0;i<lead;i++)cells+='<span class="cd empty"></span>';
+  for(let d=1;d<=days;d++){
+    const s=y+'-'+pad2(m+1)+'-'+pad2(d),dt=new Date(y,m,d),wd=dt.getDay(),h=H[s],ap=apptOn(s).filter(x=>!AF.id||x.id!==AF.id).length;
+    if(h)hm.push(pad2(d)+'.'+pad2(m+1)+'. '+h.n+(h.reg?' (regional)':''));
+    const cls=['cd',wd===6?'sat':'',wd===0?'sun':'',h?(h.reg?'hol reg':'hol'):'',s===AF.date?'sel':'',s===t?'today':'',ap?'has':''].filter(Boolean).join(' ');
+    cells+=`<button type="button" class="${cls}" onclick="calPick('${s}')" title="${esc(dayLabel(s)+(h?' · '+h.n:''))}">${d}</button>`;
+  }
+  const on=apptOn(AF.date).filter(x=>!AF.id||x.id!==AF.id);
+  return `<div class="cal"><div class="calnav"><button type="button" class="btn sec" onclick="calNav(-12)" aria-label="Vorheriges Jahr">«</button><button type="button" class="btn sec" onclick="calNav(-1)" aria-label="Vorheriger Monat">‹</button><b>${MONTHS[m]} ${y}</b><button type="button" class="btn sec" onclick="calNav(1)" aria-label="Nächster Monat">›</button><button type="button" class="btn sec" onclick="calNav(12)" aria-label="Nächstes Jahr">»</button></div>
+  <div class="calgrid"><span class="cw">Mo</span><span class="cw">Di</span><span class="cw">Mi</span><span class="cw">Do</span><span class="cw">Fr</span><span class="cw sat">Sa</span><span class="cw sun">So</span>${cells}</div>
+  <div class="callegend"><span><i class="lg sat"></i>Samstag</span><span><i class="lg sun"></i>Sonntag</span><span><i class="lg hol"></i>Feiertag</span><span><i class="lg has"></i>Termin vorhanden</span><button type="button" class="btn sec" onclick="calToday()">Heute</button></div>
+  ${hm.length?`<div class="muted calhol">Feiertage: ${esc(hm.join(' · '))}</div>`:''}
+  ${on.length?`<div class="banner orange">An diesem Tag gibt es schon: ${esc(on.map(x=>(x.title||'Formel-1-Abend')+' ('+timeText(x)+')').join(', '))}</div>`:''}</div>`;
+}
+function calNav(k){const d=new Date(AF._y,AF._m+k,1);AF._y=d.getFullYear();AF._m=d.getMonth();document.getElementById('calBox').innerHTML=calHTML()}
+function calToday(){const d=new Date();AF._y=d.getFullYear();AF._m=d.getMonth();document.getElementById('calBox').innerHTML=calHTML()}
+function calPick(s){
+  AF.date=s;AF._bad=false;document.getElementById('afDate').value=fmtDE(s);document.getElementById('afDay').textContent=dayLabelHol(s);
+  document.getElementById('calBox').innerHTML=calHTML();
+}
+function saveAppt(){
+  const msg=t=>{const e=document.getElementById('afMsg');e.style.display='';e.textContent=t;e.scrollIntoView({block:'nearest'})};
+  const a=AF;
+  if(!(a.title||'').trim())return msg('Bitte einen Titel eingeben.');
+  if(AF._bad||!ymdParse(a.date))return msg('Das Datum ist ungültig. Bitte als TT.MM.JJJJ eingeben oder im Kalender wählen.');
+  if(!a.allDay&&!/^\d{2}:\d{2}$/.test(a.start||''))return msg('Bitte einen Beginn (Uhrzeit) eingeben.');
+  const n={id:a.id||newApptId(),title:a.title.trim(),date:a.date,allDay:!!a.allDay,start:a.allDay?'':a.start,end:a.allDay?'':(a.end||''),place:(a.place||'').trim(),who:[...a.who],notes:(a.notes||'').trim(),remind:+a.remind||0,repeat:a.repeat||'none',count:a.repeat&&a.repeat!=='none'?Math.max(2,+a.count||2):1,tentative:!!a.tentative};
+  const now=new Date().toISOString();
+  if(a._orig){
+    const ch=apptDiff(a._orig,n);
+    if(!ch.length){openAppts();toast('Keine Änderung');return}
+    n.seq=(a._orig.seq||0)+1;n.created=a._orig.created;n.updated=now;
+    const moved=ch.some(c=>c.f==='Datum'||c.f==='Beginn'||c.f==='Ende');
+    S.appts=S.appts.map(x=>x.id===n.id?n:x);apptLogAdd(n,moved?'verschoben':'geändert',ch);
+  }else{
+    n.seq=0;n.created=now;n.updated=now;S.appts.push(n);apptLogAdd(n,'angelegt',[]);
+  }
+  save();AF=null;openAppts();toast('Termin gespeichert');
+}
+
+/* --- Verlauf --- */
+function openApptLog(id){
+  apptEnsure();
+  const list=S.apptLog.filter(l=>!id||l.id===id).slice().reverse();
+  const icon={angelegt:'➕',geändert:'✏',verschoben:'↔',gelöscht:'🗑'};
+  const fdt=t=>{const d=new Date(t);return fdate(d)};
+  showSheet(`<h1>🕘 Terminverlauf</h1><p class="muted">${id?'Alle Änderungen dieses Termins':'Alle Änderungen an allen Terminen'}, neueste zuerst. Der Verlauf kann nicht gelöscht werden.</p>
+  ${list.length?list.map(l=>`<div class="logrow ${l.a}"><div><b>${icon[l.a]||''} ${esc(l.a)}</b> · ${esc(l.title||'')} <span class="muted">· ${esc(fdt(l.t))}</span></div>
+    ${l.a==='angelegt'&&l.snap?`<div class="muted">${esc(dayLabel(l.snap.date))} · ${esc(timeText(l.snap))}${l.snap.place?' · '+esc(l.snap.place):''}</div>`:''}
+    ${l.a==='gelöscht'&&l.snap?`<div class="muted">war: ${esc(dayLabel(l.snap.date))} · ${esc(timeText(l.snap))}${l.snap.place?' · '+esc(l.snap.place):''}</div>`:''}
+    ${(l.changes||[]).map(c=>`<div class="chg"><span class="muted">${esc(c.f)}:</span> <s>${esc(c.from)}</s> → <b>${esc(c.to)}</b></div>`).join('')}</div>`).join(''):'<div class="banner">Noch keine Einträge.</div>'}
+  <div style="margin-top:12px"><button class="btn sec" onclick="openAppts()">← Zurück zu den Terminen</button></div>`);
+}
+const fdate=d=>pad2(d.getDate())+'.'+pad2(d.getMonth()+1)+'.'+d.getFullYear()+' '+pad2(d.getHours())+':'+pad2(d.getMinutes());
+// nächster Termin für den Startbildschirm
+function nextApptLine(){
+  const t=todayStr();let best=null;
+  S.appts.forEach(a=>{const d=nextOcc(a,t);if(d&&(!best||(d+(a.start||'')).localeCompare(best.d+(best.a.start||''))<0))best={a,d}});
+  if(!best)return '';
+  const diff=Math.round((Date.UTC(...best.d.split('-').map((v,i)=>i===1?v-1:+v))-Date.UTC(...t.split('-').map((v,i)=>i===1?v-1:+v)))/864e5);
+  return `<div class="nextappt" onclick="openAppts()">📅 Nächster Termin: <b>${esc(dayLabel(best.d))}</b> ${esc(best.a.allDay?'':best.a.start||'')} – ${esc(best.a.title||'Formel-1-Abend')} <span class="muted">(${diff===0?'heute':diff===1?'morgen':'in '+diff+' Tagen'})</span></div>`;
+}
+
+/* ---------- WhatsApp: erst die Nachricht (Zahlungen als Text), dann die Datei ---------- */
+let _wa=null;
+function waDialog(o){_wa={...o,step:0};drawWa()}
+function drawWa(){
+  const o=_wa,hasFile=!!o.name;
+  showSheet(`<h1>💬 An WhatsApp senden</h1><p class="muted">${hasFile?'In zwei Schritten: erst die Nachricht, dann die Datei.':'Die Nachricht wird an WhatsApp übergeben.'} Im WhatsApp-Fenster wählst du den Chat oder die Gruppe.</p>
+  <label>${esc(o.title||'Nachricht')}</label><pre class="wapre">${esc(o.text)}</pre>
+  <div style="display:flex;flex-direction:column;gap:8px;margin:10px 0">
+  <button class="btn" id="waStep1" onclick="waStep(1)">${o.step>=1?'✔':'①'} Nachricht an WhatsApp senden</button>
+  ${hasFile?`<button class="btn ${o.step>=1?'':'sec'}" id="waStep2" onclick="waStep(2)">${o.step>=2?'✔':'②'} Datei senden: ${esc(o.name)}</button>`:''}</div>
+  <p class="muted">${hasFile?'Nach Schritt ① kommst du hierher zurück und sendest mit ② die Datei in denselben Chat. ':''}Ohne WhatsApp auf dem Gerät öffnet sich stattdessen das allgemeine Teilen-Menü bzw. WhatsApp im Browser.</p>
+  <button class="btn sec" onclick="closeModal()">${o.step>=(hasFile?2:1)?'Fertig':'Abbrechen'}</button>`);
+}
+async function waStep(n){
+  const o=_wa;if(!o)return;
+  const A=androidApp();
+  if(n===1){
+    if(A&&typeof A.shareWhatsApp!=='undefined')A.shareWhatsApp('','',o.text);
+    else if(A)A.shareText(o.text);
+    else window.open('https://wa.me/?text='+encodeURIComponent(o.text),'_blank');
+  }else{
+    if(A&&typeof A.shareWhatsApp!=='undefined')A.shareWhatsApp(o.name,o.content,'');
+    else if(A)A.shareFile(o.name,o.content,'');
+    else{
+      let done=false;
+      try{const f=new File([o.content],o.name,{type:o.mime||'application/json'});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:o.name});done=true}}catch(e){if(e&&e.name==='AbortError')return}
+      if(!done){await saveText(o.name,o.content,o.mime);toast('Datei gespeichert: '+o.name+' – in WhatsApp über die Büroklammer anhängen.',8000)}
+    }
+  }
+  o.step=Math.max(o.step,n);if(document.getElementById('modal').innerText.includes('An WhatsApp senden'))drawWa();
+}
+/* ---------- Text für WhatsApp / E-Mail, Import ---------- */
+function summaryText(day){
+  const rows=dayRows(day).slice().sort((a,b)=>((a.st?99:a.place||98)-(b.st?99:b.place||98))||(a.st==='dnf'?-1:0)-(b.st==='dnf'?-1:0)||byName(a.name,b.name));
+  const lines=rows.map(r=>r.st==='dns'?r.name+': nicht angetreten':r.st==='dnf'?r.name+': ausgefallen (0 Punkte)'+(r.start?' · Start '+r.start:''):r.place?r.place+'. '+r.name+': '+r.pts+' Punkte'+(r.start?' · Start '+r.start:''):r.name+': noch offen');
+  const same=S.days.filter(d=>d.season===day.season),i=same.indexOf(day),upto=i>=0?same.slice(0,i+1):[...same,day];
+  const {t}=totalsOf(upto),ns=Object.keys(t),rk=ranksOf(t,ns);
+  const stand=ns.sort((a,b)=>t[b]-t[a]||byName(a,b)).map(n=>rk[n]+'. '+n+' '+t[n]).join(' · ');
+  return ['🏎 Formel 1 – '+seasonName(day.season)+' – Rennen '+raceNo(day)+': '+(day.kurs||'?')+(fmtDay(day)?' ('+fmtDay(day)+')':''),...lines,'Gesamtstand: '+stand].join('\n');
+}
+function lastSummary(){
+  const d=S.days.length?S.days[S.days.length-1]:S.cur;
+  return d?summaryText(d):'🏎 Formel 1 – noch kein Rennen';
+}
+async function mailResult(){
+  const day=S.days.length?S.days[S.days.length-1]:S.cur;
+  if(!day){toast('Es gibt noch kein Rennen zum Senden.');return}
+  const to=mailList(),subject='Ergebnis Formel 1 – '+(day.kurs||'')+' '+fmtDay(day),body=summaryText(day),fname=exportName(),json=JSON.stringify(S,null,1);
+  if(!to.length)toast('Keine E-Mail-Adressen hinterlegt (⚙ Einstellungen) – die E-Mail hat dann keine Empfänger.',5000);
+  if(androidApp()&&typeof androidApp().sendMail!=='undefined'){androidApp().sendMail(to.join(','),subject,body,fname,json);return}
+  const emlName='Ergebnis-Formel1-'+String(day.date||ymd(new Date())).slice(0,10)+'.eml';
+  if(/^(127\.0\.0\.1|localhost)$/.test(location.hostname)&&location.port==='47653'){
+    const eml=buildEml(to,subject,body,fname,json);
+    try{const r=await fetch('/openeml?name='+encodeURIComponent(emlName),{method:'POST',body:eml});if(r.ok){toast('Das E-Mail-Programm öffnet eine neue E-Mail …');return}}catch(e){}
+  }
+  if(isIOS()&&!androidApp()){mailDialogIOS({to,subject,body,fname,json,emlName});return}
+  mailDialogMobile({to,subject,body,fname,json,emlName});
+}
+function importSum(s){return `${(s.days||[]).length} abgeschlossene Rennen in ${((s.pastSeasons||[]).length)+1} Saison(s)${s.cur?', laufender Spieltag ('+esc(s.cur.kurs||'')+')':''}, ${(s.appts||[]).length} Termine (${(s.apptLog||[]).length} Verlaufseinträge)`}
+function loadImport(text){
+  let nS;
+  try{
+    nS=JSON.parse(text);
+    if(!nS||!nS.season||!Array.isArray(nS.season.players)||!Array.isArray(nS.days))throw new Error('format');
+  }catch(e){toast('Datei ungültig (keine Formel-1-Datei) – nichts geändert');return}
+  _pendingImport=nS;
+  showSheet(`<h1>⚠ Achtung: Alles wird ersetzt</h1>
+  <div class="banner orange" style="margin:8px 0">Beim Import werden <b>alle aktuellen Daten gelöscht und durch den Inhalt der Datei ersetzt</b>: Rennen, Saisons, laufender Spieltag, Termine mit Verlauf und E-Mail-Adressen.</div>
+  <table style="margin:6px 0"><tbody><tr><td>Jetzt in der App</td><td>${importSum(S)}</td></tr><tr><td>Neu aus der Datei</td><td><b>${importSum(nS)}</b></td></tr></tbody></table>
+  <label class="chk"><input type="checkbox" id="impOk" onchange="document.getElementById('impGo').disabled=!this.checked"> Ja, ich habe verstanden: alle aktuellen Daten werden ersetzt.</label>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0"><button class="btn bad" id="impGo" disabled onclick="applyImport()">Alles ersetzen</button><button class="btn sec" onclick="_pendingImport=null;openImport()">← Abbrechen</button></div>
+  <p class="muted">Danach lässt sich der Import mit „↶ Rückgängig“ zurücknehmen, solange die App offen bleibt. Sicherer: vorher mit „Export / Senden“ sichern.</p>`);
+}
+function applyImport(){
+  const nS=_pendingImport;if(!nS)return;
+  try{
+    const oldEmails=S.emails||{};
+    const n=normalize(nS);
+    n.emails=Object.keys(n.emails).length?n.emails:oldEmails;
+    S=n;SU=null;VIEWSEASON=null;STATSEL='all';_pendingImport=null;
+    save();closeModal();HOME=true;render();toast('Daten importiert – „↶ Rückgängig“ nimmt es zurück',6000);
+  }catch(e){toast('Datei ungültig – nichts geändert')}
+}
+
+/* ---------- Logo, Info, Menü, Update ---------- */
+const APP_NAME='Formel1-LOGGER',APP_TAG='Rennen, Platzierungen, Statistik + Termine',APP_VERSION='1.0.0',APP_BUILD='2026-11-11';
+const LOGOS=[
+  {n:'Rennwagen',svg:`<svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" font-family="Georgia,serif"><rect width="128" height="128" rx="28" fill="#17382a"/><text x="64" y="29" text-anchor="middle" font-size="19" font-weight="700" fill="#f6f1e3" letter-spacing="2">FORMEL 1</text><path d="M8 101H120" stroke="#e8b923" stroke-width="2.5" stroke-linecap="round" opacity=".55"/><g transform="translate(0 1)"><!-- Heckflügel --><path d="M10 49h18v4.5H10z" fill="#c61f18"/><path d="M12 49v-3M26 49v-3" stroke="#c61f18" stroke-width="2.4"/><path d="M19 53v20" stroke="#8c1510" stroke-width="3"/><!-- Karosserie --><path d="M20 72l14-5 12-3 5-8 12-2 5 9 22 6 24 8 1 4-4 3H24z" fill="#e0261f"/><path d="M46 64l5-8 11-2 4 9z" fill="#b81a14"/><path d="M30 78h66" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".9"/><!-- Fahrer --><circle cx="64" cy="60" r="5.4" fill="#f6f1e3"/><rect x="63.5" y="58.3" width="6" height="3.2" rx="1.4" fill="#17382a"/><!-- Frontflügel --><path d="M102 89h20v4.5h-22z" fill="#f6f1e3"/><path d="M121 86v8" stroke="#e0261f" stroke-width="3"/><!-- Räder --><circle cx="37" cy="87" r="13.5" fill="#0c0c0c"/><circle cx="37" cy="87" r="6.5" fill="#aab0b6"/><circle cx="37" cy="87" r="2.2" fill="#0c0c0c"/><circle cx="97" cy="89" r="11" fill="#0c0c0c"/><circle cx="97" cy="89" r="5.4" fill="#aab0b6"/><circle cx="97" cy="89" r="1.9" fill="#0c0c0c"/></g><text x="64" y="121" text-anchor="middle" font-size="19" font-weight="700" fill="#e8b923" letter-spacing="4">LOG</text></svg>`},
+];
+const logoSvg=(i,px)=>LOGOS[0].svg.replace('<svg ',`<svg width="${px}" height="${px}" `);
+try{if('serviceWorker' in navigator&&(location.protocol==='https:'||/[?&]pwa=1/.test(location.search))&&!androidApp())navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}
+const webMode=()=>(location.protocol==='https:'||/[?&]pwa=1/.test(location.search))&&!androidApp();
+async function checkUpdate(manual){
+  if(!webMode()){if(manual)toast('Diese Version wird nicht über die Webseite aktualisiert.');return}
+  try{
+    const base=location.pathname.replace(/[^/]*$/,'');
+    const r=await fetch(base+'index.html?v='+Date.now(),{cache:'no-store'}),t=await r.text(),m=/APP_VERSION='([0-9.]+)'/.exec(t);
+    if(m&&m[1]!==APP_VERSION)showUpdate(m[1]);
+    else if(manual)toast('Die App ist auf dem neuesten Stand (Version '+APP_VERSION+').');
+  }catch(e){if(manual)toast('Update-Prüfung nicht möglich (kein Netz?).')}
+}
+function showUpdate(v){
+  if(document.getElementById('updBar'))return;
+  const d=document.createElement('div');d.id='updBar';d.className='toast';d.style.cssText='pointer-events:auto;cursor:pointer';
+  d.innerHTML='Neue Version '+esc(v)+' verfügbar – <b style="text-decoration:underline">jetzt laden</b> (deine Daten bleiben erhalten)';
+  d.onclick=reloadApp;document.body.appendChild(d);
+}
+async function reloadApp(){
+  try{const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));const rg=await navigator.serviceWorker.getRegistrations();await Promise.all(rg.map(x=>x.update().catch(()=>{})))}catch(e){}
+  location.reload();
+}
+setTimeout(()=>checkUpdate(false),2500);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkUpdate(false)});
+function applyFavicon(){
+  let l=document.getElementById('fav');if(!l){l=document.createElement('link');l.id='fav';l.rel='icon';document.head.appendChild(l)}
+  l.href='data:image/svg+xml,'+encodeURIComponent(LOGOS[0].svg);
+}
+const helpBtns=()=>`<button class="btn sec" onclick="openSearch()">🔍 Suche</button><button class="btn sec" onclick="openHelp()">❓ Hilfe</button><button class="btn sec" onclick="openInfo()">ℹ Info</button>`;
+function openMenu(){
+  const it=(ic,t,fn)=>`<button class="menu-item" onclick="${fn}"><span>${ic}</span>${t}</button>`;
+  const items=[it('🏠','Startbildschirm','goHome()'),...(S.cur?[it('⚙','Einstellungen','openSettings()')]:[]),it('📋','Gesamtansicht','openOverview()'),it('📊','Statistik','openStats()'),it('🏆','Saisons','openSeasons()'),it('📅','Termine','openAppts()'),it('📤','Export / Senden','openExport()'),...(S.cur?[]:[it('📥','Import','openImport()')]),it('🔍','Suche','openSearch()'),it('❓','Hilfe','openHelp()'),it('ℹ','Info','openInfo()')];
+  showSheet(`<h1>Menü</h1><div class="menu-grid">${items.join('')}</div><div style="margin-top:12px"><button class="btn sec" onclick="closeModal()">Schließen</button></div>`);
+}
+function openInfo(){
+  showSheet(`<div style="display:flex;gap:14px;align-items:center;margin-bottom:6px">${logoSvg(0,72)}<div><h1 style="margin:0">${APP_NAME}</h1><div class="muted">${APP_TAG}</div></div></div>
+  <table style="margin:8px 0"><tbody>
+  <tr><td>Versionsstand</td><td><b>${APP_VERSION}</b></td></tr>
+  <tr><td>Erzeugungsdatum</td><td><b>${new Date(APP_BUILD).toLocaleDateString('de-DE',{day:'2-digit',month:'long',year:'numeric'})}</b></td></tr>
+  <tr><td>Hersteller</td><td><b>Martin mit Claude</b></td></tr>
+  <tr><td>Gespeicherte Daten</td><td>${S.days.length} abgeschlossene Rennen in ${S.pastSeasons.length+1} Saison(s)<br><span class="muted">liegen lokal in diesem Browser bzw. dieser App</span></td></tr>
+  </tbody></table>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px"><button class="btn" onclick="openHelp()">Hilfe</button>${webMode()?'<button class="btn sec" onclick="checkUpdate(true)">Nach Update suchen</button>':''}<button class="btn sec" onclick="closeModal()">Schließen</button></div>`);
+}
+
+/* ---------- Hilfe und Suche ---------- */
+const HELP=[
+{id:'os',t:'1. Betriebssysteme und Versionen',h:`<p>Aktueller Stand: <b>Version ${APP_VERSION}</b>. Es ist immer dieselbe App; sie läuft als <b>Android-App (F1Log.apk, ab Android 7.0, getestet auf Huawei P10 mit Android 9)</b> und als <b>Web-App</b> in jedem aktuellen Browser (Chrome, Edge, Safari, Firefox) auf PC, Handy und Tablet, auch auf iPhone und iPad („Zum Home-Bildschirm“).</p>`},
+{id:'install',t:'2. Installation und Updates',h:`<ul><li><b>Android (APK):</b> <b>F1Log.apk</b> aufs Handy kopieren, antippen und „Installation aus dieser Quelle zulassen“ bestätigen. Update: neue APK einfach über die alte installieren, die Daten bleiben. Meldet Android „App nicht installiert“, die alte App erst über <b>Export</b> sichern, deinstallieren, neue installieren und per <b>Import</b> zurückholen.</li>
+<li><b>Web-App:</b> die Adresse <b>https://snoopy-wup.github.io/formel1-logger/</b> öffnen. Android (Chrome): Menü ⋮ → „App installieren“. iPhone (Safari): Teilen → „Zum Home-Bildschirm“.</li>
+<li><b>Updates der Web-App</b> kommen von selbst („Neue Version … verfügbar – jetzt laden“), die Daten bleiben erhalten. Von Hand: <b>Info → Nach Update suchen</b>.</li></ul>`},
+{id:'grund',t:'3. Grundeinstellungen einrichten',h:`<ol><li><b>Saison anlegen:</b> 🏆 Saisons → <b>Neue Saison</b>. Dort legst du Namen der Saison, die <b>Spieler (1 bis 8, Namen frei)</b> und die <b>Punkte für Platz 1–6</b> fest. Das gilt jeweils nur für diese Saison. Mit <b>⚙ Einstellungen → Saison bearbeiten</b> änderst du es später (Punkte rechnen alle Rennen der Saison neu, umbenannte Spieler werden überall umbenannt).</li>
+<li><b>Ablageordner und E-Mail:</b> ⚙ in der Mitte der Kopfleiste: Ordner für Import/Export (am PC in Chrome/Edge) und die <b>E-Mail-Adresse zu jedem Namen</b>.</li>
+<li><b>Termine:</b> 📅 Termine für die Renntage anlegen und in den Kalender übernehmen oder verschicken.</li></ol>`},
+{id:'speicher',t:'4. Wo die Daten liegen',h:`<p>Die Daten stehen <b>nicht in der App selbst</b>, sondern im Speicher des Geräts (Android-App: privater App-Speicher; Web-App: Speicher des Browsers). Sie bleiben bei Updates erhalten und gehen beim <b>Deinstallieren verloren</b>. Jedes Gerät hat einen eigenen Datenbestand. Zum Abgleich und zur Sicherung dienen <b>Export und Import</b>. Die Exportdatei enthält alles (Saisons, Rennen, Termine, E-Mail-Adressen), nicht den Ablageordner.</p>`},
+{id:'mail',t:'5. E-Mail- und WhatsApp-Versand',h:`<ul><li><b>Export / Senden</b> bietet <b>💬 WhatsApp (Text + Datei)</b> und <b>✉ Per E-Mail senden</b>. Der Text enthält das Ergebnis des letzten Rennens und den Gesamtstand der Saison.</li>
+<li><b>Android-App:</b> die E-Mail öffnet sich mit Empfängern, Betreff, Text und angehängter Datei. Beim ersten Mal die E-Mail-App wählen und „Immer“ antippen (zurücksetzen: Einstellungen → Apps → Standard-Apps).</li>
+<li><b>Web-Version:</b> Eine Web-App kann keine E-Mail mit Anhang öffnen. Ein Fenster erklärt den Ablauf: die Datei wird im Download-Ordner gespeichert, die E-Mail öffnet sich ohne Anhang, den du selbst anhängst. Auf dem iPhone gibt es „E-Mail mit Datei (Teilen-Menü → Mail)“.</li></ul>`},
+{id:'bedienung',t:'6. Bedienung im Überblick',h:`<ul><li><b>Neuer Spieltag:</b> Startbildschirm → „Neuer Spieltag“. <b>Kurs</b> aus dem Auswahlmenü wählen (nur Kurse, die in dieser Saison noch nicht gefahren wurden; „Anderer Kurs …“ legt einen neuen an), <b>Datum</b> prüfen und die <b>Teilnehmer</b> wählen. Dann „Spieltag starten“.</li>
+<li><b>Ergebnis eintragen:</b> Je Spieler den <b>Startplatz</b> und das <b>Ziel</b> wählen: Platz 1, 2, 3 … oder <b>Ausgefallen</b> (im Rennen ausgeschieden) oder <b>Nicht angetreten</b>. Jeder Platz kann nur einmal vergeben werden. Die Plätze müssen lückenlos bei 1 beginnen (Ausgefallene zählen nicht mit). Die Punkte erscheinen sofort rechts. „Zwischenspeichern“ merkt den Stand, „Rennen abschließen“ übernimmt das Rennen in die Saison.</li>
+<li><b>Spielseite:</b> oben die Spieler (<b>alphabetisch von links nach rechts</b>) mit Platz in der Saison und den Saisonpunkten, darunter das laufende und die bisherigen Rennen (neueste oben). Ein abgeschlossenes Rennen öffnet mit <b>Doppeltipp</b> und lässt sich korrigieren oder löschen.</li>
+<li><b>Gesamtansicht:</b> alle Rennen mit Punkten, Endplatz und Startplatz je Spieler, Summen und Podest-Symbole.</li>
+<li><b>Statistik:</b> Saison und Rennen wählen. <b>Diagramme</b> (Kuchen für Punkte, Siege, Ausfälle, nicht angetreten, Platzierungen und Startplätze je Spieler, Balken, Punkteverlauf) und <b>Tabelle</b> (Punkte, Teilnahme, Anzahl je Platz, Ausfälle, Startplätze, Aufholjagd, Matrix Startplatz → Endplatz).</li>
+<li><b>Saisons:</b> Übersicht aller Saisons, Bearbeiten, Löschen (immer zwei Rückfragen), Neue Saison.</li>
+<li><b>Rückgängig:</b> nimmt die letzte Änderung zurück, solange die App offen bleibt.</li>
+<li><b>✕</b> schließt das Fenster, auf dem Startbildschirm die App. <b>🏠</b> geht zum Startbildschirm.</li></ul>`},
+{id:'regeln',t:'7. Punkte und Wertung',h:`<ul><li>Die <b>Punkte für Platz 1–6</b> legst du je Saison fest (z. B. 12 / 8 / 6 / 4 / 2 / 1 bei sechs Spielern oder 10 / 6 / 3 / 2 bei vier Spielern). <b>Platz 7 und 8 bekommen 0 Punkte.</b></li>
+<li><b>Ausgefallen</b> und <b>Nicht angetreten</b> geben 0 Punkte und zählen in der Statistik getrennt. Ein Ausgefallener belegt keinen Endplatz, die übrigen Plätze rücken nach.</li>
+<li>Die <b>Wertung der Saison</b> ist die Summe der Punkte: die meisten Punkte = Platz 1, Gleichstand = gleicher Platz.</li>
+<li><b>Startplätze</b> werden zu jedem Endplatz festgehalten. Die Statistik zeigt Ø Startplatz, Pole-Positions, Siege von Start 1, gewonnene Plätze (Start → Ziel) und die Matrix Startplatz → Endplatz.</li></ul>`},
+];
+const plainText=h=>h.replace(/<[^>]+>/g,' ').replace(/&[a-z]+;/g,' ').replace(/\s+/g,' ');
+const matchTerms=(text,terms)=>{const t=text.toLowerCase();return terms.every(x=>t.includes(x))};
+let HELPQ='';
+function openHelp(id,q){
+  if(q!==undefined)HELPQ=q;
+  const terms=HELPQ.toLowerCase().split(/\s+/).filter(Boolean);
+  const list=HELP.filter(s=>!terms.length||matchTerms(s.t+' '+plainText(s.h),terms));
+  showSheet(`<h1>Hilfe</h1><p class="muted">So funktioniert die App und so werden die Punkte gerechnet.</p>
+  <input type="text" id="helpIn" placeholder="In der Hilfe suchen …" value="${esc(HELPQ)}" oninput="openHelp(undefined,this.value)">
+  ${terms.length?'':`<div class="htoc">${HELP.map(x=>`<a href="#" onclick="document.getElementById('h-${x.id}').scrollIntoView();return false">${x.t}</a>`).join('')}</div>`}
+  <div class="help">${list.length?list.map(s=>`<div class="hsec" id="h-${s.id}"><h3>${s.t}</h3>${s.h}</div>`).join(''):'<p class="muted">Nichts gefunden.</p>'}</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn sec" onclick="openSearch(HELPQ)">🔍 In allen Daten suchen</button><button class="btn sec" onclick="closeModal()">Schließen</button></div>`);
+  const el=document.getElementById('helpIn');
+  if(q!==undefined&&el){el.focus();const v=el.value;el.value='';el.value=v}
+  if(id){const t=document.getElementById('h-'+id);if(t)t.scrollIntoView()}
+}
+let SEARCHQ='';
+function raceText(d){
+  const rows=dayRows(d);
+  return [d.kurs,fmtDay(d),seasonName(d.season),'rennen '+raceNo(d),...rows.map(r=>r.name+' '+(r.st==='dns'?'nicht angetreten fehlt':r.st==='dnf'?'ausgefallen ausfall':'platz '+r.place+(r.place===1?' sieger gewonnen':''))+(r.start?' start '+r.start+(r.start===1?' pole':''):''))].join(' ');
+}
+function openSearch(q){
+  if(q!==undefined)SEARCHQ=q;
+  const terms=SEARCHQ.toLowerCase().split(/\s+/).filter(Boolean);
+  let out='';
+  if(terms.length){
+    const helpHits=HELP.filter(s=>matchTerms(s.t+' '+plainText(s.h),terms));
+    out+=`<h3>Hilfe (${helpHits.length})</h3>`+(helpHits.map(s=>`<div class="hit" onclick="openHelp('${s.id}',SEARCHQ)">${s.t}</div>`).join('')||'<div class="muted">–</div>');
+    const days=daysOf('all',true).slice().reverse();
+    const hits=days.filter(d=>matchTerms(raceText(d),terms));
+    out+=`<h3>Rennen (${hits.length})</h3>`+(hits.slice(0,60).map(d=>`<div class="hit" onclick="${isCur(d)?'closeModal();goApp()':`VIEWSEASON=${d.season};openStats('d${d.id}')`}"><span class="muted">${fmtDay(d)?fmtDay(d)+' · ':''}${esc(seasonName(d.season))} · Rennen ${raceNo(d)}</span><br><b>${esc(d.kurs)}</b>${isCur(d)?' (läuft)':''} · ${dayRows(d).filter(r=>r.place&&!r.st).sort((a,b)=>a.place-b.place).slice(0,3).map(r=>r.place+'. '+esc(r.name)).join(', ')}</div>`).join('')||'<div class="muted">–</div>');
+  }else out='<p class="muted">Suche nach Kursen, Spielern, Saison, Datum … z. B. „Monaco“, „Martin Platz 1“, „ausgefallen Guido“, „2026“.</p>';
+  showSheet(`<h1>Suche</h1><input type="text" id="searchIn" placeholder="Suchbegriff …" value="${esc(SEARCHQ)}" oninput="openSearch(this.value)">${out}
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn sec" onclick="openHelp()">❓ Hilfe</button><button class="btn sec" onclick="closeModal()">Schließen</button></div>`);
+  const el=document.getElementById('searchIn');if(el){el.focus();const v=el.value;el.value='';el.value=v}
+}
+
+new MutationObserver(()=>document.body.classList.toggle('lock',!!document.getElementById('modal').firstChild)).observe(document.getElementById('modal'),{childList:true});
+lastSnap=JSON.stringify(S);
+applyFavicon();
+render();
+
+</script></body></html>
